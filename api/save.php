@@ -11,6 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $dataDir = __DIR__ . '/../data';
 if (!file_exists($dataDir)) {
     mkdir($dataDir, 0777, true);
+    chmod($dataDir, 0777);
 }
 
 $dataFile = $dataDir . '/wishes.json';
@@ -24,10 +25,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $rawInput = file_get_contents('php://input');
     $input = json_decode($rawInput, true);
 
+    if (!$input && !empty($_POST)) {
+        $input = $_POST;
+    }
+
     if (!$input) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid JSON']);
-        exit;
+        // Fallback: try raw decoded payload
+        if (!empty($rawInput)) {
+            $input = ['raw' => $rawInput];
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid JSON or empty payload']);
+            exit;
+        }
     }
 
     $id = 'wish_' . substr(md5(uniqid(rand(), true)), 0, 10);
@@ -35,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $wishes[$id] = $input;
     file_put_contents($dataFile, json_encode($wishes, JSON_PRETTY_PRINT));
+    chmod($dataFile, 0777);
 
     echo json_encode(['status' => 'success', 'id' => $id]);
     exit;
