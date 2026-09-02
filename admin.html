@@ -658,7 +658,7 @@
                     <div class="photo-preview-box">
                         <img id="photo-preview" class="photo-preview" src="./images/unnamed.png" alt="Preview">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                            <input type="text" id="photo_url" placeholder="Paste Image URL here..." oninput="previewImage(this.value)">
+                            <input type="text" id="photo_url" placeholder="Paste Image URL here (Recommended for light links)..." oninput="previewImage(this.value)">
                             <input type="file" id="photo_file" accept="image/*" onchange="handleFileUpload(event)">
                         </div>
                     </div>
@@ -679,12 +679,12 @@
                 <!-- 9. Firebase Settings (Optional) -->
                 <div class="form-group full-width">
                     <button type="button" class="accordion-toggle" onclick="toggleFirebaseSection()">
-                        <span><i class="fa-solid fa-database"></i> Database / Firebase Setup (Optional)</span>
+                        <span><i class="fa-solid fa-database"></i> Database / Firebase / VPS Setup</span>
                         <i class="fa-solid fa-chevron-down" id="fb-arrow"></i>
                     </button>
                     <div id="firebase-accordion" class="accordion-content">
                         <p style="font-size: 0.85rem; color: #718096; margin-bottom: 10px;">
-                            If configured, wishes will be saved directly to Firebase database with a short ID! Otherwise, full standalone URL parameter links are generated automatically.
+                            Saves wish data to Firebase Realtime Database or VPS PHP backend (`api/save.php`) to generate ultra-short, clean links (`?id=wish_xxx`)!
                         </p>
                         <div class="form-grid">
                             <div class="form-group">
@@ -748,7 +748,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             
-            // Set default date picker to today
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('schedule_target_date').value = todayStr;
             
@@ -807,6 +806,7 @@
             }
         }
 
+        // Downscale image uploads to low-size thumbnail to prevent URI Too Long
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
@@ -817,7 +817,8 @@
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         
-                        const maxDim = 400;
+                        // Limit maximum thumbnail size to 120px for light base64 string (< 3KB)
+                        const maxDim = 120;
                         let width = img.width;
                         let height = img.height;
                         
@@ -837,7 +838,7 @@
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.45);
                         document.getElementById('photo-preview').src = compressedDataUrl;
                         document.getElementById('photo_url').value = compressedDataUrl;
                     };
@@ -859,7 +860,6 @@
             }
         }
 
-        // Helper to get active non-expired scheduled list
         function getScheduledList() {
             const raw = localStorage.getItem('scheduled_birthdays');
             if (!raw) return [];
@@ -867,7 +867,6 @@
                 const list = JSON.parse(raw);
                 const now = new Date();
                 
-                // Filter out items older than 24h past target date end
                 const activeList = list.filter(item => {
                     if (!item.targetDate) return true;
                     const targetEnd = new Date(item.targetDate + "T23:59:59");
@@ -885,8 +884,61 @@
             }
         }
 
+        // Build safe wish link preventing URI Too Long errors
+        async function buildSafeWishUrl(wishObj) {
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
+
+            // 1. Try VPS PHP API (`api/save.php`)
+            try {
+                const res = await fetch('api/save.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(wishObj)
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.status === 'success' && json.id) {
+                        return `${baseUrl}?id=${json.id}`;
+                    }
+                }
+            } catch (e) {
+                console.log("VPS PHP API save not available, trying Firebase...", e);
+            }
+
+            // 2. Try Firebase Database
+            const fbDbUrl = document.getElementById('fb_db_url').value.trim();
+            const fbApiKey = document.getElementById('fb_api_key').value.trim();
+
+            if (fbDbUrl && fbApiKey && window.firebase) {
+                try {
+                    const customConfig = {
+                        apiKey: fbApiKey,
+                        databaseURL: fbDbUrl
+                    };
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(customConfig);
+                    }
+                    const newWishRef = firebase.database().ref('wishes').push();
+                    await newWishRef.set(wishObj);
+                    return `${baseUrl}?id=${newWishRef.key}`;
+                } catch (e) {
+                    console.warn("Firebase save error:", e);
+                }
+            }
+
+            // 3. Fallback Base64 URL (Capped to prevent URI Too Long error)
+            const safeObj = { ...wishObj };
+            if (safeObj.photo && safeObj.photo.startsWith('data:image') && safeObj.photo.length > 2500) {
+                safeObj.photo = "./images/unnamed.png";
+            }
+
+            const jsonString = JSON.stringify(safeObj);
+            const encoded = btoa(encodeURIComponent(jsonString));
+            return `${baseUrl}?data=${encoded}`;
+        }
+
         // Render Scheduled Birthdays in Admin Panel List
-        function renderScheduledBirthdays() {
+        async function renderScheduledBirthdays() {
             const container = document.getElementById('scheduled-list-container');
             const list = getScheduledList();
 
@@ -903,7 +955,7 @@
             const todayStr = new Date().toISOString().split('T')[0];
             let html = '';
 
-            list.forEach((item, index) => {
+            for (const item of list) {
                 const isGirl = item.gender === 'girl';
                 const genderBadge = isGirl ? 
                     `<span class="badge-gender badge-girl"><i class="fa-solid fa-venus"></i> Girl</span>` : 
@@ -918,11 +970,7 @@
                     statusBadge = `<span class="status-badge status-expired"><i class="fa-solid fa-hourglass-end"></i> Auto-Deleting Soon (24h)</span>`;
                 }
 
-                // Generate Base64 URL for item
-                const jsonString = JSON.stringify(item);
-                const encoded = btoa(encodeURIComponent(jsonString));
-                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
-                const wishUrl = `${baseUrl}?data=${encoded}`;
+                const wishUrl = await buildSafeWishUrl(item);
 
                 html += `
                     <div class="birthday-card-item">
@@ -948,7 +996,7 @@
                         </div>
                     </div>
                 `;
-            });
+            }
 
             container.innerHTML = html;
         }
@@ -977,46 +1025,14 @@
                 createdAt: new Date().toISOString()
             };
 
-            // Save to Scheduled Birthdays Array in LocalStorage
             let list = getScheduledList();
             list.push(wishObj);
             localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
-
-            // Also save as last preview
             localStorage.setItem('last_created_wish', JSON.stringify(wishObj));
 
-            // Refresh list display
+            const shareableUrl = await buildSafeWishUrl(wishObj);
+
             renderScheduledBirthdays();
-
-            // Firebase check
-            const fbDbUrl = document.getElementById('fb_db_url').value.trim();
-            const fbApiKey = document.getElementById('fb_api_key').value.trim();
-
-            let shareableUrl = "";
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
-
-            if (fbDbUrl && fbApiKey && window.firebase) {
-                try {
-                    const customConfig = {
-                        apiKey: fbApiKey,
-                        databaseURL: fbDbUrl
-                    };
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(customConfig);
-                    }
-                    const newWishRef = firebase.database().ref('wishes').push();
-                    await newWishRef.set(wishObj);
-                    shareableUrl = `${baseUrl}?id=${newWishRef.key}`;
-                } catch (e) {
-                    console.warn("Firebase save error, falling back to base64 URL:", e);
-                }
-            }
-
-            if (!shareableUrl) {
-                const jsonString = JSON.stringify(wishObj);
-                const encoded = btoa(encodeURIComponent(jsonString));
-                shareableUrl = `${baseUrl}?data=${encoded}`;
-            }
 
             const urlInput = document.getElementById('generated-url');
             urlInput.value = shareableUrl;
@@ -1024,7 +1040,6 @@
             document.getElementById('link-output').style.display = 'block';
         }
 
-        // Delete a scheduled wish
         function deleteScheduledWish(id) {
             let list = getScheduledList();
             list = list.filter(item => item.id !== id);
@@ -1032,7 +1047,6 @@
             renderScheduledBirthdays();
         }
 
-        // Copy dynamic link helper
         function copyCustomLink(url) {
             navigator.clipboard.writeText(url);
             alert("✨ Birthday Wish Link copied to clipboard!");

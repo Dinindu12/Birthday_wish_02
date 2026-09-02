@@ -38,13 +38,11 @@ function getActiveScheduledBirthdays() {
         
         const activeList = list.filter(item => {
             if (!item.targetDate) return true;
-            // Target date expiration is 24h after end of birthday target date
             const targetEnd = new Date(item.targetDate + "T23:59:59");
             const hoursPast = (now - targetEnd) / (1000 * 60 * 60);
             return hoursPast <= 24;
         });
 
-        // Save cleaned list if any expired items were auto-deleted
         if (activeList.length !== list.length) {
             localStorage.setItem('scheduled_birthdays', JSON.stringify(activeList));
         }
@@ -55,7 +53,7 @@ function getActiveScheduledBirthdays() {
     }
 }
 
-// Read parameters from URL query string or auto-load today's scheduled birthday
+// Fetch Wish Data from URL params, VPS API, Firebase, or Scheduled Local List
 async function loadWishData() {
     const urlParams = new URLSearchParams(window.location.search);
     const encodedData = urlParams.get('data');
@@ -71,21 +69,39 @@ async function loadWishData() {
         }
     }
 
-    // 2. Firebase Mode
-    if (wishId && window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+    // 2. Database Fetch by ID (VPS PHP Endpoint OR Firebase)
+    if (wishId) {
+        // Try VPS PHP Endpoint first
         try {
-            if (!firebase.apps.length) {
-                firebase.initializeApp(window.firebaseAppConfig);
+            const vpsResponse = await fetch(`api/get.php?id=${encodeURIComponent(wishId)}`);
+            if (vpsResponse.ok) {
+                const json = await vpsResponse.json();
+                if (json && json.status === 'success' && json.data) {
+                    wishData = { ...DEFAULT_WISH_DATA, ...json.data };
+                    console.log("Loaded wish data from VPS Database API:", wishData);
+                    return;
+                }
             }
-            const db = firebase.database();
-            const snapshot = await db.ref('wishes/' + wishId).once('value');
-            if (snapshot.exists()) {
-                wishData = { ...DEFAULT_WISH_DATA, ...snapshot.val() };
-                console.log("Loaded wish data from Firebase:", wishData);
-                return;
+        } catch (e) {
+            console.log("VPS API check bypassed/failed, trying Firebase...", e);
+        }
+
+        // Try Firebase Database
+        if (window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(window.firebaseAppConfig);
+                }
+                const db = firebase.database();
+                const snapshot = await db.ref('wishes/' + wishId).once('value');
+                if (snapshot.exists()) {
+                    wishData = { ...DEFAULT_WISH_DATA, ...snapshot.val() };
+                    console.log("Loaded wish data from Firebase:", wishData);
+                    return;
+                }
+            } catch (err) {
+                console.warn("Firebase fetch error:", err);
             }
-        } catch (err) {
-            console.warn("Firebase fetch error, using default/local storage fallback:", err);
         }
     }
 
@@ -94,7 +110,6 @@ async function loadWishData() {
     if (activeScheduled.length > 0) {
         const todayStr = new Date().toISOString().split('T')[0];
         
-        // Find wish matching today's date
         const todayMatch = activeScheduled.find(item => item.targetDate === todayStr);
         if (todayMatch) {
             wishData = { ...DEFAULT_WISH_DATA, ...todayMatch };
@@ -102,7 +117,6 @@ async function loadWishData() {
             return;
         }
 
-        // If no exact today match, use the most recent active scheduled item
         const latestWish = activeScheduled[activeScheduled.length - 1];
         if (latestWish) {
             wishData = { ...DEFAULT_WISH_DATA, ...latestWish };
