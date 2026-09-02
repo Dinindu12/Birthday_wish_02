@@ -887,36 +887,29 @@
         // Build safe wish link preventing URI Too Long errors
         async function buildSafeWishUrl(wishObj) {
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
-            const vpsApiBase = window.VPS_API_URL || "http://162.35.189.85/api";
+            const candidates = [
+                window.VPS_API_URL,
+                "http://162.35.189.85/api",
+                "http://162.35.189.85:8000/api",
+                "http://162.35.189.85:8080/api",
+                "api"
+            ].filter(Boolean);
 
-            // 1. Try VPS Data Store PHP API (162.35.189.85/api/save.php or relative)
-            try {
-                const res = await fetch(`${vpsApiBase}/save.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(wishObj)
-                });
-                if (res.ok) {
-                    const json = await res.json();
-                    if (json && json.status === 'success' && json.id) {
-                        return `${baseUrl}?id=${json.id}`;
-                    }
-                }
-            } catch (e) {
-                console.log("VPS Data Store API 162.35.189.85 check bypassed/failed, trying relative API...", e);
+            // 1. Try VPS Data Store PHP API candidates
+            for (const apiUrl of candidates) {
                 try {
-                    const relRes = await fetch('api/save.php', {
+                    const res = await fetch(`${apiUrl}/save.php`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(wishObj)
                     });
-                    if (relRes.ok) {
-                        const json = await relRes.json();
+                    if (res.ok) {
+                        const json = await res.json();
                         if (json && json.status === 'success' && json.id) {
                             return `${baseUrl}?id=${json.id}`;
                         }
                     }
-                } catch (err) {}
+                } catch (e) {}
             }
 
             // 2. Try Firebase Database

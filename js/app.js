@@ -2,8 +2,14 @@
  * Birthday Wish Web Application - Dynamic Renderer & Controller
  */
 
-// VPS Data Store API Endpoint
-const VPS_API_BASE = window.VPS_API_URL || "http://162.35.189.85/api";
+// VPS Data Store Candidate Endpoints (Port 80, Port 8000, Port 8080, Relative)
+const VPS_API_CANDIDATES = [
+    window.VPS_API_URL,
+    "http://162.35.189.85/api",
+    "http://162.35.189.85:8000/api",
+    "http://162.35.189.85:8080/api",
+    "api"
+].filter(Boolean);
 
 // Default Fallback Wish Data
 const DEFAULT_WISH_DATA = {
@@ -74,29 +80,21 @@ async function loadWishData() {
 
     // 2. Database Fetch by ID (VPS Data Store API OR Firebase)
     if (wishId) {
-        // Try VPS Data Store API (162.35.189.85)
-        try {
-            const vpsResponse = await fetch(`${VPS_API_BASE}/get.php?id=${encodeURIComponent(wishId)}`);
-            if (vpsResponse.ok) {
-                const json = await vpsResponse.json();
-                if (json && json.status === 'success' && json.data) {
-                    wishData = { ...DEFAULT_WISH_DATA, ...json.data };
-                    console.log("Loaded wish data from VPS Data Store API (162.35.189.85):", wishData);
-                    return;
-                }
-            }
-        } catch (e) {
-            console.log("VPS API check bypassed/failed, trying relative API or Firebase...", e);
+        // Try VPS Data Store API Candidate Ports
+        for (const baseUrl of VPS_API_CANDIDATES) {
             try {
-                const relResponse = await fetch(`api/get.php?id=${encodeURIComponent(wishId)}`);
-                if (relResponse.ok) {
-                    const json = await relResponse.json();
+                const vpsResponse = await fetch(`${baseUrl}/get.php?id=${encodeURIComponent(wishId)}`);
+                if (vpsResponse.ok) {
+                    const json = await vpsResponse.json();
                     if (json && json.status === 'success' && json.data) {
                         wishData = { ...DEFAULT_WISH_DATA, ...json.data };
+                        console.log(`Loaded wish data from VPS Data Store (${baseUrl}):`, wishData);
                         return;
                     }
                 }
-            } catch (err) {}
+            } catch (e) {
+                // Continue to next candidate port
+            }
         }
 
         // Try Firebase Database
