@@ -2,6 +2,9 @@
  * Birthday Wish Web Application - Dynamic Renderer & Controller
  */
 
+// VPS Data Store API Endpoint
+const VPS_API_BASE = window.VPS_API_URL || "http://162.35.189.85/api";
+
 // Default Fallback Wish Data
 const DEFAULT_WISH_DATA = {
     name: "Mehwish",
@@ -53,7 +56,7 @@ function getActiveScheduledBirthdays() {
     }
 }
 
-// Fetch Wish Data from URL params, VPS API, Firebase, or Scheduled Local List
+// Fetch Wish Data from URL params, VPS API (162.35.189.85), Firebase, or Scheduled Local List
 async function loadWishData() {
     const urlParams = new URLSearchParams(window.location.search);
     const encodedData = urlParams.get('data');
@@ -69,21 +72,31 @@ async function loadWishData() {
         }
     }
 
-    // 2. Database Fetch by ID (VPS PHP Endpoint OR Firebase)
+    // 2. Database Fetch by ID (VPS Data Store API OR Firebase)
     if (wishId) {
-        // Try VPS PHP Endpoint first
+        // Try VPS Data Store API (162.35.189.85)
         try {
-            const vpsResponse = await fetch(`api/get.php?id=${encodeURIComponent(wishId)}`);
+            const vpsResponse = await fetch(`${VPS_API_BASE}/get.php?id=${encodeURIComponent(wishId)}`);
             if (vpsResponse.ok) {
                 const json = await vpsResponse.json();
                 if (json && json.status === 'success' && json.data) {
                     wishData = { ...DEFAULT_WISH_DATA, ...json.data };
-                    console.log("Loaded wish data from VPS Database API:", wishData);
+                    console.log("Loaded wish data from VPS Data Store API (162.35.189.85):", wishData);
                     return;
                 }
             }
         } catch (e) {
-            console.log("VPS API check bypassed/failed, trying Firebase...", e);
+            console.log("VPS API check bypassed/failed, trying relative API or Firebase...", e);
+            try {
+                const relResponse = await fetch(`api/get.php?id=${encodeURIComponent(wishId)}`);
+                if (relResponse.ok) {
+                    const json = await relResponse.json();
+                    if (json && json.status === 'success' && json.data) {
+                        wishData = { ...DEFAULT_WISH_DATA, ...json.data };
+                        return;
+                    }
+                }
+            } catch (err) {}
         }
 
         // Try Firebase Database

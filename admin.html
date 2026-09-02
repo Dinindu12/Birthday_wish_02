@@ -887,10 +887,11 @@
         // Build safe wish link preventing URI Too Long errors
         async function buildSafeWishUrl(wishObj) {
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
+            const vpsApiBase = window.VPS_API_URL || "http://162.35.189.85/api";
 
-            // 1. Try VPS PHP API (`api/save.php`)
+            // 1. Try VPS Data Store PHP API (162.35.189.85/api/save.php or relative)
             try {
-                const res = await fetch('api/save.php', {
+                const res = await fetch(`${vpsApiBase}/save.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(wishObj)
@@ -902,7 +903,20 @@
                     }
                 }
             } catch (e) {
-                console.log("VPS PHP API save not available, trying Firebase...", e);
+                console.log("VPS Data Store API 162.35.189.85 check bypassed/failed, trying relative API...", e);
+                try {
+                    const relRes = await fetch('api/save.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(wishObj)
+                    });
+                    if (relRes.ok) {
+                        const json = await relRes.json();
+                        if (json && json.status === 'success' && json.id) {
+                            return `${baseUrl}?id=${json.id}`;
+                        }
+                    }
+                } catch (err) {}
             }
 
             // 2. Try Firebase Database
