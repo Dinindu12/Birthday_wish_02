@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Wish Admin Dashboard 🎂</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Sriracha&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF7882;
+            --primary-boy: #1E88E5;
+            --bg-color: #F8F9FA;
+            --card-bg: #FFFFFF;
+            --text-color: #2D3748;
+            --border-radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #FFF3F5;
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px 20px 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            position: relative;
+        }
+
+        /* Login Modal Overlay */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(6px);
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: #FFFFFF;
+            width: 100%;
+            max-width: 400px;
+            padding: 35px 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            border: 2px solid #FFD1D5;
+            animation: modalPop 0.4s ease;
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .login-card h2 {
+            color: #FF5362;
+            margin-bottom: 8px;
+            font-size: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .login-card p {
+            color: #718096;
+            font-size: 0.88rem;
+            margin-bottom: 25px;
+        }
+
+        .login-field {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .login-field label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4A5568;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .login-field input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .login-field input:focus {
+            border-color: #FF7882;
+            box-shadow: 0 0 0 3px rgba(255, 120, 130, 0.15);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, #FF7882 0%, #FF5362 100%);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255, 83, 98, 0.35);
+            transition: all 0.3s ease;
+            margin-top: 5px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 83, 98, 0.45);
+        }
+
+        .login-error {
+            display: none;
+            color: #E53E3E;
+            font-size: 0.85rem;
+            margin-top: 12px;
+            font-weight: 500;
+            background: #FFF5F5;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #FEB2B2;
+        }
+
+        /* Protected Dashboard Container */
+        .admin-container {
+            max-width: 900px;
+            width: 100%;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 30px;
+            border: 2px solid #FFE4E6;
+            position: relative;
+        }
+
+        .admin-container.protected-blur {
+            filter: blur(10px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed #FFD1D5;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #FF5362;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 0.95rem;
+            margin-top: 5px;
+        }
+
+        .btn-back {
+            position: absolute;
+            left: 0;
+            top: 0;
+            background: #EDF2F7;
+            color: #4A5568;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background: #FF7882;
+            color: white;
+        }
+
+        .btn-logout {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: #EDF2F7;
+            color: #4A5568;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover {
+            background: #E2E8F0;
+            color: #E53E3E;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .btn-back, .btn-logout {
+                position: static;
+                margin-top: 10px;
+                display: inline-flex;
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #4A5568;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="date"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #FF7882;
+            box-shadow: 0 0 0 3px rgba(255, 120, 130, 0.15);
+        }
+
+        /* Gender Radio Selector */
+        .gender-selector {
+            display: flex;
+            gap: 15px;
+        }
+
+        .gender-card {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .gender-card.girl-card {
+            color: #FF5362;
+        }
+
+        .gender-card.boy-card {
+            color: #1E88E5;
+        }
+
+        input[type="radio"] {
+            display: none;
+        }
+
+        #gender-girl:checked + .girl-card {
+            border-color: #FF7882;
+            background-color: #FFF0F2;
+            box-shadow: 0 4px 12px rgba(255, 120, 130, 0.2);
+        }
+
+        #gender-boy:checked + .boy-card {
+            border-color: #1E88E5;
+            background-color: #EBF5FF;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
+        }
+
+        /* Photo Upload Container */
+        .photo-preview-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .photo-preview {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #FF7882;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Buttons & Actions */
+        .action-section {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #FF7882 0%, #FF5362 100%);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(255, 83, 98, 0.35);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 83, 98, 0.45);
+        }
+
+        .link-output-box {
+            display: none;
+            background: #F7FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .link-input-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .btn-copy {
+            background: #319795;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-view {
+            background: #4A5568;
+            color: white;
+            text-decoration: none;
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Scheduled List Section */
+        .scheduled-section {
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px dashed #FFD1D5;
+        }
+
+        .scheduled-section h2 {
+            font-size: 1.3rem;
+            color: #2D3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .scheduled-section .subtitle {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-bottom: 20px;
+        }
+
+        .birthday-card-item {
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .birthday-card-item:hover {
+            border-color: #FF7882;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .birthday-card-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .birthday-card-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #FF7882;
+        }
+
+        .birthday-card-info h4 {
+            font-size: 1rem;
+            color: #2D3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge-gender {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .badge-girl { background: #FFF0F2; color: #FF5362; }
+        .badge-boy { background: #EBF5FF; color: #1E88E5; }
+
+        .status-badge {
+            font-size: 0.78rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .status-active { background: #C6F6D5; color: #22543D; }
+        .status-upcoming { background: #FEFCBF; color: #744210; }
+        .status-expired { background: #FED7D7; color: #742A2A; }
+
+        .birthday-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-decoration: none;
+        }
+
+        .btn-sm-copy { background: #319795; color: white; }
+        .btn-sm-view { background: #4A5568; color: white; }
+        .btn-sm-delete { background: #E53E3E; color: white; }
+
+        /* Accordion */
+        .accordion-toggle {
+            background: #EDF2F7;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #4A5568;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .accordion-content {
+            display: none;
+            padding: 15px;
+            background: #F8FAFC;
+            border-radius: 8px;
+            margin-top: 8px;
+            border: 1px solid #E2E8F0;
+        }
+
+        /* Footer */
+        .admin-footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #718096;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Admin Authentication Overlay -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2><i class="fa-solid fa-lock"></i> Admin Access</h2>
+            <p>Please enter admin credentials to access configurator.</p>
+
+            <form onsubmit="event.preventDefault(); attemptLogin();">
+                <div class="login-field">
+                    <label for="login-username"><i class="fa-solid fa-user-shield"></i> Username</label>
+                    <input type="text" id="login-username" placeholder="Enter Admin Username" required autocomplete="username">
+                </div>
+
+                <div class="login-field">
+                    <label for="login-password"><i class="fa-solid fa-key"></i> Password</label>
+                    <input type="password" id="login-password" placeholder="Enter Admin Password" required autocomplete="current-password">
+                </div>
+
+                <div id="login-error" class="login-error">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Invalid Username or Password!
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login to Admin Panel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Container -->
+    <div class="admin-container protected-blur" id="admin-container">
+        <div class="header">
+            <a href="index.html" class="btn-back">
+                <i class="fa-solid fa-arrow-left"></i> View Birthday Page
+            </a>
+            <button class="btn-logout" onclick="logoutAdmin()">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </button>
+            <h1><i class="fa-solid fa-cake-candles"></i> Birthday Wish Configurator</h1>
+            <p>Customize Girl (Pink) & Boy (Blue) themes, dynamic names, dates, photos & wishes!</p>
+        </div>
+
+        <form id="wish-form" onsubmit="event.preventDefault(); generateLink();">
+            <div class="form-grid">
+                
+                <!-- 1. Gender Selection -->
+                <div class="form-group full-width">
+                    <label><i class="fa-solid fa-venus-mars"></i> Select Theme / Gender</label>
+                    <div class="gender-selector">
+                        <input type="radio" id="gender-girl" name="gender" value="girl" checked onchange="updateThemePreview('girl')">
+                        <label for="gender-girl" class="gender-card girl-card">
+                            <i class="fa-solid fa-venus"></i> Girl Theme (Pink 🌸)
+                        </label>
+
+                        <input type="radio" id="gender-boy" name="gender" value="boy" onchange="updateThemePreview('boy')">
+                        <label for="gender-boy" class="gender-card boy-card">
+                            <i class="fa-solid fa-mars"></i> Boy Theme (Blue 💙)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. Recipient Name -->
+                <div class="form-group">
+                    <label for="recipient_name"><i class="fa-solid fa-user"></i> Recipient Name</label>
+                    <input type="text" id="recipient_name" placeholder="e.g. Mehwish / Kasun" required value="Mehwish">
+                </div>
+
+                <!-- 3. Birthday Text Date -->
+                <div class="form-group">
+                    <label for="birthday_date"><i class="fa-solid fa-tag"></i> Birthday Label Text</label>
+                    <input type="text" id="birthday_date" placeholder="e.g. 27 May / Oct 15" required value="27 May">
+                </div>
+
+                <!-- 4. Schedule Date Target -->
+                <div class="form-group">
+                    <label for="schedule_target_date"><i class="fa-solid fa-calendar-day"></i> Schedule Birthday Date (Target Date)</label>
+                    <input type="date" id="schedule_target_date" required>
+                </div>
+
+                <!-- 5. Theme Accent Color fine-tune -->
+                <div class="form-group">
+                    <label for="theme_color"><i class="fa-solid fa-palette"></i> Custom Color Accent</label>
+                    <input type="color" id="theme_color" value="#FF7882" style="height: 48px; cursor: pointer;">
+                </div>
+
+                <!-- 6. Profile Photo -->
+                <div class="form-group full-width">
+                    <label><i class="fa-solid fa-image"></i> Profile Photo (URL or File Upload)</label>
+                    <div class="photo-preview-box">
+                        <img id="photo-preview" class="photo-preview" src="./images/unnamed.png" alt="Preview">
+                        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                            <input type="text" id="photo_url" placeholder="Paste Image URL here..." oninput="previewImage(this.value)">
+                            <input type="file" id="photo_file" accept="image/*" onchange="handleFileUpload(event)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Card Subtitle / Header -->
+                <div class="form-group full-width">
+                    <label for="card_title"><i class="fa-solid fa-envelope"></i> Envelope Title</label>
+                    <input type="text" id="card_title" placeholder="e.g. To You! / Happy Birthday Champ" value="To You!">
+                </div>
+
+                <!-- 8. Full Wish Letter Message -->
+                <div class="form-group full-width">
+                    <label for="letter_text"><i class="fa-solid fa-envelope-open-text"></i> Birthday Wish Letter Message</label>
+                    <textarea id="letter_text" rows="4" placeholder="Write your heartfelt birthday wish here..." required>Happy birthday 🥳🎂🥳 the day you came into my life I was not really attached to you, but day by day you became so close to my heart. I wish you all the happiness, joy, and success in the world! May all your dreams come true! 🎈🎂🎈 Don't be sad, always stay happy and keep smiling! 😌✨</textarea>
+                </div>
+
+                <!-- 9. Firebase Settings (Optional) -->
+                <div class="form-group full-width">
+                    <button type="button" class="accordion-toggle" onclick="toggleFirebaseSection()">
+                        <span><i class="fa-solid fa-database"></i> Database / Firebase Setup (Optional)</span>
+                        <i class="fa-solid fa-chevron-down" id="fb-arrow"></i>
+                    </button>
+                    <div id="firebase-accordion" class="accordion-content">
+                        <p style="font-size: 0.85rem; color: #718096; margin-bottom: 10px;">
+                            If configured, wishes will be saved directly to Firebase database with a short ID! Otherwise, full standalone URL parameter links are generated automatically.
+                        </p>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Firebase Database URL</label>
+                                <input type="text" id="fb_db_url" placeholder="https://your-app-default-rtdb.firebaseio.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Firebase API Key</label>
+                                <input type="text" id="fb_api_key" placeholder="AIzaSy...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="action-section">
+                <button type="submit" class="btn-main" id="btn-generate">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Save Birthday & Generate Share Link
+                </button>
+
+                <div class="link-output-box" id="link-output">
+                    <label style="color: #2B6CB0;"><i class="fa-solid fa-link"></i> Shareable Birthday Wish Link:</label>
+                    <div class="link-input-group">
+                        <input type="text" id="generated-url" readonly>
+                        <button type="button" class="btn-copy" onclick="copyGeneratedLink()">
+                            <i class="fa-solid fa-copy"></i> Copy Link
+                        </button>
+                        <a id="btn-open-preview" href="#" target="_blank" class="btn-view">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Wish
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <!-- Scheduled & Added Birthdays List Section -->
+        <div class="scheduled-section">
+            <h2><i class="fa-solid fa-calendar-check"></i> Added & Scheduled Birthdays List</h2>
+            <p class="subtitle">
+                Birthdays automatically display on their scheduled date and auto-delete 24 hours after their birthday!
+            </p>
+
+            <div id="scheduled-list-container">
+                <!-- Dynamically rendered by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Footer -->
+    <footer class="admin-footer">
+        Developed with ❤️ by Dinindu Jayampathi
+    </footer>
+
+    <script>
+        // Default Admin Credentials
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "admin123";
+
+        // Check authentication state & initialize default date
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            
+            // Set default date picker to today
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('schedule_target_date').value = todayStr;
+            
+            renderScheduledBirthdays();
+        });
+
+        function checkAuth() {
+            const isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
+            const overlay = document.getElementById('login-overlay');
+            const container = document.getElementById('admin-container');
+
+            if (isAuth) {
+                overlay.style.display = 'none';
+                container.classList.remove('protected-blur');
+            } else {
+                overlay.style.display = 'flex';
+                container.classList.add('protected-blur');
+            }
+        }
+
+        function attemptLogin() {
+            const userIn = document.getElementById('login-username').value.trim();
+            const passIn = document.getElementById('login-password').value.trim();
+            const errorBox = document.getElementById('login-error');
+
+            if (userIn === ADMIN_USER && passIn === ADMIN_PASS) {
+                sessionStorage.setItem('admin_authenticated', 'true');
+                errorBox.style.display = 'none';
+                checkAuth();
+            } else {
+                errorBox.style.display = 'block';
+            }
+        }
+
+        function logoutAdmin() {
+            sessionStorage.removeItem('admin_authenticated');
+            checkAuth();
+        }
+
+        function updateThemePreview(gender) {
+            const colorPicker = document.getElementById('theme_color');
+            const previewImg = document.getElementById('photo-preview');
+            
+            if (gender === 'boy') {
+                colorPicker.value = '#1E88E5';
+                previewImg.style.borderColor = '#1E88E5';
+            } else {
+                colorPicker.value = '#FF7882';
+                previewImg.style.borderColor = '#FF7882';
+            }
+        }
+
+        function previewImage(url) {
+            if (url && url.trim() !== "") {
+                document.getElementById('photo-preview').src = url;
+            }
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        
+                        const maxDim = 400;
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > height) {
+                            if (width > maxDim) {
+                                height *= maxDim / width;
+                                width = maxDim;
+                            }
+                        } else {
+                            if (height > maxDim) {
+                                width *= maxDim / height;
+                                height = maxDim;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                        document.getElementById('photo-preview').src = compressedDataUrl;
+                        document.getElementById('photo_url').value = compressedDataUrl;
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function toggleFirebaseSection() {
+            const content = document.getElementById('firebase-accordion');
+            const arrow = document.getElementById('fb-arrow');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                arrow.className = 'fa-solid fa-chevron-down';
+            } else {
+                content.style.display = 'block';
+                arrow.className = 'fa-solid fa-chevron-up';
+            }
+        }
+
+        // Helper to get active non-expired scheduled list
+        function getScheduledList() {
+            const raw = localStorage.getItem('scheduled_birthdays');
+            if (!raw) return [];
+            try {
+                const list = JSON.parse(raw);
+                const now = new Date();
+                
+                // Filter out items older than 24h past target date end
+                const activeList = list.filter(item => {
+                    if (!item.targetDate) return true;
+                    const targetEnd = new Date(item.targetDate + "T23:59:59");
+                    const hoursPast = (now - targetEnd) / (1000 * 60 * 60);
+                    return hoursPast <= 24;
+                });
+
+                if (activeList.length !== list.length) {
+                    localStorage.setItem('scheduled_birthdays', JSON.stringify(activeList));
+                }
+
+                return activeList;
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // Render Scheduled Birthdays in Admin Panel List
+        function renderScheduledBirthdays() {
+            const container = document.getElementById('scheduled-list-container');
+            const list = getScheduledList();
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 25px; background: #F8FAFC; border-radius: 12px; border: 2px dashed #CBD5E0; color: #A0AEC0;">
+                        <i class="fa-solid fa-calendar-plus" style="font-size: 2rem; margin-bottom: 8px;"></i>
+                        <p style="font-weight: 500;">No scheduled birthdays added yet. Use the form above to add a birthday!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            let html = '';
+
+            list.forEach((item, index) => {
+                const isGirl = item.gender === 'girl';
+                const genderBadge = isGirl ? 
+                    `<span class="badge-gender badge-girl"><i class="fa-solid fa-venus"></i> Girl</span>` : 
+                    `<span class="badge-gender badge-boy"><i class="fa-solid fa-mars"></i> Boy</span>`;
+                
+                let statusBadge = '';
+                if (item.targetDate === todayStr) {
+                    statusBadge = `<span class="status-badge status-active"><i class="fa-solid fa-cake-candles"></i> Active Today</span>`;
+                } else if (item.targetDate > todayStr) {
+                    statusBadge = `<span class="status-badge status-upcoming"><i class="fa-solid fa-clock"></i> Upcoming (${item.targetDate})</span>`;
+                } else {
+                    statusBadge = `<span class="status-badge status-expired"><i class="fa-solid fa-hourglass-end"></i> Auto-Deleting Soon (24h)</span>`;
+                }
+
+                // Generate Base64 URL for item
+                const jsonString = JSON.stringify(item);
+                const encoded = btoa(encodeURIComponent(jsonString));
+                const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
+                const wishUrl = `${baseUrl}?data=${encoded}`;
+
+                html += `
+                    <div class="birthday-card-item">
+                        <div class="birthday-card-left">
+                            <img src="${item.photo || './images/unnamed.png'}" class="birthday-card-avatar" alt="Avatar">
+                            <div class="birthday-card-info">
+                                <h4>${item.name} ${genderBadge} ${statusBadge}</h4>
+                                <p style="font-size: 0.8rem; color: #718096; margin-top: 2px;">
+                                    <i class="fa-solid fa-calendar-day"></i> Target Date: <strong>${item.targetDate}</strong> (${item.date || 'No Label'})
+                                </p>
+                            </div>
+                        </div>
+                        <div class="birthday-card-actions">
+                            <button class="btn-sm btn-sm-copy" onclick="copyCustomLink('${wishUrl}')">
+                                <i class="fa-solid fa-copy"></i> Copy Link
+                            </button>
+                            <a href="${wishUrl}" target="_blank" class="btn-sm btn-sm-view">
+                                <i class="fa-solid fa-eye"></i> View
+                            </a>
+                            <button class="btn-sm btn-sm-delete" onclick="deleteScheduledWish(${item.id})">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Save & Generate Wish Link
+        async function generateLink() {
+            const gender = document.querySelector('input[name="gender"]:checked').value;
+            const name = document.getElementById('recipient_name').value.trim();
+            const date = document.getElementById('birthday_date').value.trim();
+            const targetDate = document.getElementById('schedule_target_date').value;
+            const photo = document.getElementById('photo_url').value.trim() || document.getElementById('photo-preview').src;
+            const cardTitle = document.getElementById('card_title').value.trim();
+            const themeColor = document.getElementById('theme_color').value;
+            const letterText = document.getElementById('letter_text').value.trim();
+
+            const wishObj = {
+                id: Date.now(),
+                name,
+                date,
+                targetDate,
+                gender,
+                photo,
+                cardTitle,
+                themeColor,
+                letterText,
+                createdAt: new Date().toISOString()
+            };
+
+            // Save to Scheduled Birthdays Array in LocalStorage
+            let list = getScheduledList();
+            list.push(wishObj);
+            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
+
+            // Also save as last preview
+            localStorage.setItem('last_created_wish', JSON.stringify(wishObj));
+
+            // Refresh list display
+            renderScheduledBirthdays();
+
+            // Firebase check
+            const fbDbUrl = document.getElementById('fb_db_url').value.trim();
+            const fbApiKey = document.getElementById('fb_api_key').value.trim();
+
+            let shareableUrl = "";
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
+
+            if (fbDbUrl && fbApiKey && window.firebase) {
+                try {
+                    const customConfig = {
+                        apiKey: fbApiKey,
+                        databaseURL: fbDbUrl
+                    };
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(customConfig);
+                    }
+                    const newWishRef = firebase.database().ref('wishes').push();
+                    await newWishRef.set(wishObj);
+                    shareableUrl = `${baseUrl}?id=${newWishRef.key}`;
+                } catch (e) {
+                    console.warn("Firebase save error, falling back to base64 URL:", e);
+                }
+            }
+
+            if (!shareableUrl) {
+                const jsonString = JSON.stringify(wishObj);
+                const encoded = btoa(encodeURIComponent(jsonString));
+                shareableUrl = `${baseUrl}?data=${encoded}`;
+            }
+
+            const urlInput = document.getElementById('generated-url');
+            urlInput.value = shareableUrl;
+            document.getElementById('btn-open-preview').href = shareableUrl;
+            document.getElementById('link-output').style.display = 'block';
+        }
+
+        // Delete a scheduled wish
+        function deleteScheduledWish(id) {
+            let list = getScheduledList();
+            list = list.filter(item => item.id !== id);
+            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
+            renderScheduledBirthdays();
+        }
+
+        // Copy dynamic link helper
+        function copyCustomLink(url) {
+            navigator.clipboard.writeText(url);
+            alert("✨ Birthday Wish Link copied to clipboard!");
+        }
+
+        function copyGeneratedLink() {
+            const urlInput = document.getElementById('generated-url');
+            urlInput.select();
+            urlInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(urlInput.value);
+            alert("✨ Birthday Wish Link copied to clipboard!");
+        }
+    </script>
+</body>
+</html>
