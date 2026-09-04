@@ -1,11 +1,8 @@
 // Firebase Realtime Database Configuration
-// Paste your Firebase Realtime Database URL below.
-// Example: "https://my-birthday-app-default-rtdb.firebaseio.com" or "https://my-app-default-rtdb.asia-southeast1.firebasedatabase.app"
-
 const firebaseConfig = {
-    databaseURL: "https://birthday-wish-02-default-rtdb.firebaseio.com",
+    databaseURL: "https://birthday-wishes-3f440-default-rtdb.firebaseio.com",
     apiKey: "",
-    projectId: ""
+    projectId: "birthday-wishes-3f440"
 };
 
 // Global helper
