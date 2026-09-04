@@ -2,15 +2,15 @@
  * Birthday Wish Web Application - Dynamic Renderer & Controller (Firebase Edition)
  */
 
-// Default Fallback Wish Data
+// Neutral Empty Fallback Wish Data (No hardcoded names/texts)
 const DEFAULT_WISH_DATA = {
-    name: "Mehwish",
-    date: "27 May",
+    name: "",
+    date: "",
     gender: "girl", // "girl" or "boy"
     photo: "./images/unnamed.png",
-    cardTitle: "To You!",
-    cardSubTitle: "Happy Birthday",
-    letterText: "Happy birthday 🥳🎂🥳 the day you came into my life I was not really attached to you, but day by day you became so close to my heart. I wish you all the happiness, joy, and success in the world! May all your dreams come true! 🎈🎂🎈 Don't be sad, always stay happy and keep smiling! 😌✨",
+    cardTitle: "Happy Birthday!",
+    cardSubTitle: "",
+    letterText: "No active birthday wish found for today. Use the Admin Panel to create or schedule a new wish!",
     themeColor: "#FF7882"
 };
 
@@ -85,7 +85,7 @@ async function loadWishData() {
     if (wishId) {
         const fbUrl = getFirebaseDatabaseUrl();
         
-        // A. Try Firebase REST API (Works globally on all networks without SDK overhead)
+        // A. Try Firebase REST API
         if (fbUrl) {
             try {
                 const restEndpoint = `${fbUrl}/wishes/${encodeURIComponent(wishId)}.json`;
@@ -133,35 +133,21 @@ async function loadWishData() {
             console.log("Loaded scheduled birthday matching TODAY:", wishData);
             return;
         }
-
-        const latestWish = activeScheduled[activeScheduled.length - 1];
-        if (latestWish) {
-            wishData = { ...DEFAULT_WISH_DATA, ...latestWish };
-            console.log("Loaded latest active scheduled wish:", wishData);
-            return;
-        }
     }
 
-    // 4. Fallback Local Storage preview
-    const localSaved = localStorage.getItem('last_created_wish');
-    if (localSaved && !encodedData && !wishId) {
-        try {
-            const parsedLocal = JSON.parse(localSaved);
-            wishData = { ...DEFAULT_WISH_DATA, ...parsedLocal };
-            console.log("Loaded wish data from localStorage preview:", wishData);
-            return;
-        } catch (e) {}
-    }
+    // 4. If no active birthday link or scheduled date matches today, load clean neutral empty state
+    wishData = { ...DEFAULT_WISH_DATA };
+    console.log("No active birthday found for today, displaying clean neutral template.");
 }
 
 // Render dynamic elements into the DOM
 function renderWishPage() {
     const gender = (wishData.gender || "girl").toLowerCase();
-    const name = wishData.name || "Friend";
-    const date = wishData.date || "27 May";
+    const name = wishData.name || "";
+    const date = wishData.date || "";
     const photo = wishData.photo || "./images/unnamed.png";
     const letter = wishData.letterText || DEFAULT_WISH_DATA.letterText;
-    const cardTitle = wishData.cardTitle || "To You!";
+    const cardTitle = wishData.cardTitle || "Happy Birthday!";
 
     // Apply gender theme class to body
     document.body.classList.remove('theme-girl', 'theme-boy');
@@ -179,7 +165,7 @@ function renderWishPage() {
     }
 
     // Update document title
-    document.title = `Happy Birthday ${name}! 🎂`;
+    document.title = name ? `Happy Birthday ${name}! 🎂` : "Happy Birthday! 🎂";
 
     // 1. Update Recipient Name Displays
     const nameElements = document.querySelectorAll('.recipient-name');
@@ -189,18 +175,26 @@ function renderWishPage() {
 
     const mailBtnText = document.getElementById('mail-btn-text');
     if (mailBtnText) {
-        mailBtnText.innerHTML = `Click Here ${name} <i class="fa-regular fa-envelope"></i>`;
+        if (name) {
+            mailBtnText.innerHTML = `Click Here ${name} <i class="fa-regular fa-envelope"></i>`;
+        } else {
+            mailBtnText.innerHTML = `Click Here <i class="fa-regular fa-envelope"></i>`;
+        }
     }
 
     const nameBadge = document.querySelector('.name span');
     if (nameBadge) {
-        nameBadge.textContent = `Dear ${name}`;
+        nameBadge.textContent = name ? `Dear ${name}` : "Happy Birthday";
     }
 
     const modalUserHeader = document.querySelector('.username');
     if (modalUserHeader) {
         const heartEmoji = gender === 'boy' ? '💙' : '💖';
-        modalUserHeader.innerHTML = `To: ${name} ${heartEmoji}<span class="underline"></span>`;
+        if (name) {
+            modalUserHeader.innerHTML = `To: ${name} ${heartEmoji}<span class="underline"></span>`;
+        } else {
+            modalUserHeader.innerHTML = `To You ${heartEmoji}<span class="underline"></span>`;
+        }
     }
 
     // 2. Update Profile Photos
@@ -227,7 +221,12 @@ function renderWishPage() {
     setupCircleText(`happy - birthday - `);
 
     // 5. Start Animated Date Typewriter Effect
-    startDateAnimation(date);
+    if (date) {
+        startDateAnimation(date);
+    } else {
+        const dateContainer = document.querySelector(".date__of__birth span");
+        if (dateContainer) dateContainer.textContent = "Special Day";
+    }
 }
 
 // Generate circular rotating text dynamically

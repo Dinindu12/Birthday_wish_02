@@ -808,7 +808,7 @@
             }
         }
 
-        // Downscale image uploads to low-size thumbnail to prevent URI Too Long
+        // High-definition image upload handler
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
@@ -819,7 +819,8 @@
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         
-                        const maxDim = 120;
+                        // HD photo sizing (600px max dimension, 0.85 quality)
+                        const maxDim = 600;
                         let width = img.width;
                         let height = img.height;
                         
@@ -839,7 +840,7 @@
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
 
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.45);
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                         document.getElementById('photo-preview').src = compressedDataUrl;
                         document.getElementById('photo_url').value = compressedDataUrl;
                     };
