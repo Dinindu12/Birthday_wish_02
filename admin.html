@@ -949,12 +949,64 @@
             return `${baseUrl}?data=${encoded}`;
         }
 
-        // Render Scheduled Birthdays in Admin Panel List
+        // Helper to fetch live wishes directly from Firebase Realtime Database
+        async function fetchFirebaseWishes() {
+            const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
+            if (!fbUrl) return {};
+
+            try {
+                const cleanUrl = fbUrl.trim().replace(/\/+$/, '');
+                const res = await fetch(`${cleanUrl}/wishes.json`);
+                if (res.ok) {
+                    const data = await res.json();
+                    return data || {};
+                }
+            } catch (e) {
+                console.warn("Failed to fetch Firebase wishes:", e);
+            }
+            return {};
+        }
+
+        // Render Scheduled Birthdays in Admin Panel List (Synced Live with Firebase & LocalStorage)
         async function renderScheduledBirthdays() {
             const container = document.getElementById('scheduled-list-container');
-            const list = getScheduledList();
+            container.innerHTML = `
+                <div style="text-align: center; padding: 25px; color: #718096;">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: #FF7882;"></i>
+                    <p style="margin-top: 8px; font-weight: 500;">Syncing birthdays from Firebase Cloud Database...</p>
+                </div>
+            `;
 
-            if (list.length === 0) {
+            const localList = getScheduledList();
+            const fbData = await fetchFirebaseWishes();
+
+            const combinedMap = new Map();
+
+            // 1. Process Firebase items
+            if (fbData && typeof fbData === 'object') {
+                Object.keys(fbData).forEach(key => {
+                    const item = fbData[key];
+                    if (item && typeof item === 'object') {
+                        combinedMap.set(key, {
+                            ...item,
+                            fbKey: key,
+                            id: item.id || key
+                        });
+                    }
+                });
+            }
+
+            // 2. Process LocalStorage items
+            localList.forEach(item => {
+                const key = item.fbKey || item.id || item.name;
+                if (!combinedMap.has(key)) {
+                    combinedMap.set(key, item);
+                }
+            });
+
+            const combinedList = Array.from(combinedMap.values());
+
+            if (combinedList.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; padding: 25px; background: #F8FAFC; border-radius: 12px; border: 2px dashed #CBD5E0; color: #A0AEC0;">
                         <i class="fa-solid fa-calendar-plus" style="font-size: 2rem; margin-bottom: 8px;"></i>
@@ -965,9 +1017,10 @@
             }
 
             const todayStr = new Date().toISOString().split('T')[0];
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
             let html = '';
 
-            for (const item of list) {
+            for (const item of combinedList) {
                 const isGirl = item.gender === 'girl';
                 const genderBadge = isGirl ? 
                     `<span class="badge-gender badge-girl"><i class="fa-solid fa-venus"></i> Girl</span>` : 
@@ -982,16 +1035,20 @@
                     statusBadge = `<span class="status-badge status-expired"><i class="fa-solid fa-hourglass-end"></i> Auto-Deleting Soon (24h)</span>`;
                 }
 
-                const wishUrl = await buildSafeWishUrl(item);
+                // If Firebase key exists, generate direct short link ?id=-Key
+                const wishUrl = item.fbKey ? `${baseUrl}?id=${encodeURIComponent(item.fbKey)}` : await buildSafeWishUrl(item);
+
+                const deleteArgId = JSON.stringify(item.id || '');
+                const deleteArgFbKey = JSON.stringify(item.fbKey || '');
 
                 html += `
                     <div class="birthday-card-item">
                         <div class="birthday-card-left">
                             <img src="${item.photo || './images/unnamed.png'}" class="birthday-card-avatar" alt="Avatar">
                             <div class="birthday-card-info">
-                                <h4>${item.name} ${genderBadge} ${statusBadge}</h4>
+                                <h4>${item.name || 'Birthday Wish'} ${genderBadge} ${statusBadge}</h4>
                                 <p style="font-size: 0.8rem; color: #718096; margin-top: 2px;">
-                                    <i class="fa-solid fa-calendar-day"></i> Target Date: <strong>${item.targetDate}</strong> (${item.date || 'No Label'})
+                                    <i class="fa-solid fa-calendar-day"></i> Target Date: <strong>${item.targetDate || 'Today'}</strong> (${item.date || 'No Label'})
                                 </p>
                             </div>
                         </div>
@@ -1002,7 +1059,7 @@
                             <a href="${wishUrl}" target="_blank" class="btn-sm btn-sm-view">
                                 <i class="fa-solid fa-eye"></i> View
                             </a>
-                            <button class="btn-sm btn-sm-delete" onclick="deleteScheduledWish(${item.id})">
+                            <button class="btn-sm btn-sm-delete" onclick="deleteScheduledWish(${deleteArgId}, ${deleteArgFbKey})">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -1011,6 +1068,35 @@
             }
 
             container.innerHTML = html;
+        }
+
+        // Delete wish from Firebase Cloud Realtime DB and LocalStorage
+        async function deleteScheduledWish(id, fbKey) {
+            if (!confirm("Are you sure you want to delete this birthday wish?")) return;
+
+            // 1. Delete from Firebase Realtime DB if fbKey exists
+            if (fbKey) {
+                const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
+                if (fbUrl) {
+                    try {
+                        const cleanUrl = fbUrl.trim().replace(/\/+$/, '');
+                        await fetch(`${cleanUrl}/wishes/${encodeURIComponent(fbKey)}.json`, {
+                            method: 'DELETE'
+                        });
+                        console.log("Deleted from Firebase DB:", fbKey);
+                    } catch (e) {
+                        console.warn("Failed to delete from Firebase DB:", e);
+                    }
+                }
+            }
+
+            // 2. Delete from LocalStorage
+            let list = getScheduledList();
+            list = list.filter(item => item.id !== id && item.fbKey !== fbKey);
+            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
+
+            // Refresh list
+            renderScheduledBirthdays();
         }
 
         // MP3 Audio file upload handler
