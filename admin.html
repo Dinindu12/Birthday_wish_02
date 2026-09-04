@@ -1038,8 +1038,8 @@
                 // If Firebase key exists, generate direct short link ?id=-Key
                 const wishUrl = item.fbKey ? `${baseUrl}?id=${encodeURIComponent(item.fbKey)}` : await buildSafeWishUrl(item);
 
-                const deleteArgId = JSON.stringify(item.id || '');
-                const deleteArgFbKey = JSON.stringify(item.fbKey || '');
+                const safeId = (item.id || '').toString().replace(/"/g, '&quot;');
+                const safeFbKey = (item.fbKey || '').toString().replace(/"/g, '&quot;');
 
                 html += `
                     <div class="birthday-card-item">
@@ -1059,7 +1059,7 @@
                             <a href="${wishUrl}" target="_blank" class="btn-sm btn-sm-view">
                                 <i class="fa-solid fa-eye"></i> View
                             </a>
-                            <button class="btn-sm btn-sm-delete" onclick="deleteScheduledWish(${deleteArgId}, ${deleteArgFbKey})">
+                            <button class="btn-sm btn-sm-delete" data-id="${safeId}" data-fbkey="${safeFbKey}" onclick="handleDeleteClick(this)">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -1068,6 +1068,13 @@
             }
 
             container.innerHTML = html;
+        }
+
+        // Delete button click proxy
+        function handleDeleteClick(btn) {
+            const id = btn.getAttribute('data-id');
+            const fbKey = btn.getAttribute('data-fbkey');
+            deleteScheduledWish(id, fbKey);
         }
 
         // Delete wish from Firebase Cloud Realtime DB and LocalStorage
