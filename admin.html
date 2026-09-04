@@ -1038,6 +1038,8 @@
                 // If Firebase key exists, generate direct short link ?id=-Key
                 const wishUrl = item.fbKey ? `${baseUrl}?id=${encodeURIComponent(item.fbKey)}` : await buildSafeWishUrl(item);
 
+                const safeId = (item.id || '').toString().replace(/"/g, '&quot;');
+                const safeFbKey = (item.fbKey || '').toString().replace(/"/g, '&quot;');
                 const safeWishUrl = encodeURI(wishUrl);
 
                 html += `
