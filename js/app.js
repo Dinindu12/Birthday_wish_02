@@ -452,33 +452,27 @@ function triggerSkySticksBurst() {
    ========================================================= */
 function setupAudioPlayer() {
     const audio = document.getElementById('bg-music');
-    const btn = document.getElementById('music-toggle-btn');
-    if (!audio || !btn) return;
+    if (!audio) return;
 
     const musicUrl = wishData.music || "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
     audio.src = musicUrl;
-
-    btn.onclick = () => {
-        if (audio.paused) {
-            audio.play().then(() => {
-                btn.classList.add('playing');
-            }).catch(e => console.warn("Audio play blocked:", e));
-        } else {
-            audio.pause();
-            btn.classList.remove('playing');
-        }
-    };
 }
 
 function playWishAudioAndEffects() {
     const audio = document.getElementById('bg-music');
-    const btn = document.getElementById('music-toggle-btn');
     if (audio) {
-        audio.play().then(() => {
-            if (btn) btn.classList.add('playing');
-        }).catch(e => console.warn("Auto audio play blocked:", e));
+        audio.currentTime = 0;
+        audio.play().catch(e => console.warn("Auto audio play blocked:", e));
     }
     triggerSkySticksBurst();
+}
+
+function stopWishAudio() {
+    const audio = document.getElementById('bg-music');
+    if (audio) {
+        audio.pause();
+        audio.currentTime = 0;
+    }
 }
 
 // Modal open / close handlers & Event Trigger
@@ -500,6 +494,8 @@ function setupModalEvents() {
     if (closeBtn && boxmail) {
         closeBtn.onclick = function () {
             boxmail.classList.remove('active');
+            // Auto Stop MP3 Music when Exit (X) is clicked!
+            stopWishAudio();
         };
     }
 
@@ -507,6 +503,8 @@ function setupModalEvents() {
         boxmail.onclick = function (e) {
             if (e.target === boxmail) {
                 boxmail.classList.remove('active');
+                // Auto Stop MP3 Music when clicking outside card!
+                stopWishAudio();
             }
         };
     }
