@@ -1082,64 +1082,71 @@
         }
 
         // Delete button click proxy
-        function handleDeleteClick(btn) {
+        async function handleDeleteClick(btn) {
             const id = btn.getAttribute('data-id');
             const fbKey = btn.getAttribute('data-fbkey');
-            deleteScheduledWish(id, fbKey);
+
+            if (!confirm("Are you sure you want to permanently delete this birthday wish?")) return;
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+
+            await deleteScheduledWish(id, fbKey);
         }
 
         // Delete wish permanently from Firebase Cloud Realtime DB and LocalStorage
         async function deleteScheduledWish(id, fbKey) {
-            if (!confirm("Are you sure you want to permanently delete this birthday wish?")) return;
-
             const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
-            const targetKey = fbKey || (typeof id === 'string' && id.startsWith('-') ? id : null);
+            const cleanUrl = fbUrl ? fbUrl.trim().replace(/\/+$/, '') : "";
 
-            if (fbUrl) {
-                const cleanUrl = fbUrl.trim().replace(/\/+$/, '');
+            const keysToDelete = new Set();
+            if (fbKey) keysToDelete.add(fbKey);
+            if (id && typeof id === 'string' && id.startsWith('-')) keysToDelete.add(id);
 
-                // 1. Delete target key directly
-                if (targetKey) {
+            if (cleanUrl) {
+                // 1. Delete direct target keys first
+                for (const key of keysToDelete) {
                     try {
-                        await fetch(`${cleanUrl}/wishes/${encodeURIComponent(targetKey)}.json`, {
+                        const delRes = await fetch(`${cleanUrl}/wishes/${encodeURIComponent(key)}.json`, {
                             method: 'DELETE'
                         });
-                        console.log("Permanently deleted from Firebase DB:", targetKey);
+                        console.log(`Deleted key ${key} status:`, delRes.status);
                     } catch (e) {
-                        console.warn("Failed to delete from Firebase DB:", e);
+                        console.warn("Failed to delete key:", key, e);
                     }
                 }
 
-                // 2. Also search & delete any matching item by id or fbKey
+                // 2. Search Firebase DB for any items matching id or fbKey
                 try {
                     const res = await fetch(`${cleanUrl}/wishes.json`);
                     if (res.ok) {
                         const data = await res.json();
                         if (data && typeof data === 'object') {
-                            for (const key of Object.keys(data)) {
-                                const item = data[key];
-                                if (item && (key === id || key === fbKey || key === targetKey || item.id == id)) {
-                                    await fetch(`${cleanUrl}/wishes/${encodeURIComponent(key)}.json`, {
+                            for (const k of Object.keys(data)) {
+                                const item = data[k];
+                                if (k === id || k === fbKey || keysToDelete.has(k) || (item && (item.id == id || item.fbKey == fbKey))) {
+                                    await fetch(`${cleanUrl}/wishes/${encodeURIComponent(k)}.json`, {
                                         method: 'DELETE'
                                     });
-                                    console.log("Deleted matching key from Firebase DB:", key);
+                                    console.log(`Deleted matching key ${k} from Firebase DB`);
                                 }
                             }
                         }
                     }
                 } catch (err) {
-                    console.warn("Search and delete Firebase error:", err);
+                    console.warn("Firebase search & delete error:", err);
                 }
             }
 
             // 3. Clear from LocalStorage
             let list = getScheduledList();
-            list = list.filter(item => item.id != id && item.fbKey != fbKey && item.id != targetKey);
+            list = list.filter(item => item.id != id && item.fbKey != fbKey && !keysToDelete.has(item.id) && !keysToDelete.has(item.fbKey));
             localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
             localStorage.removeItem('last_created_wish');
 
-            // Refresh list
-            renderScheduledBirthdays();
+            // 4. Wait 250ms before re-rendering list so Firebase DB indexing completes
+            await new Promise(r => setTimeout(r, 250));
+            await renderScheduledBirthdays();
         }
 
         // MP3 Audio file upload handler
