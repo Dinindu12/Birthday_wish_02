@@ -1,5 +1,5 @@
 /**
- * Birthday Wish Web Application - Dynamic Renderer & Controller (Firebase Edition)
+ * Birthday Wish Web Application - Dynamic Renderer & Controller (Firebase & SkySticks Edition)
  */
 
 // Neutral Empty Fallback Wish Data (No hardcoded names/texts)
@@ -11,7 +11,8 @@ const DEFAULT_WISH_DATA = {
     cardTitle: "Happy Birthday!",
     cardSubTitle: "",
     letterText: "No active birthday wish found for today. Use the Admin Panel to create or schedule a new wish!",
-    themeColor: "#FF7882"
+    themeColor: "#FF7882",
+    music: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"
 };
 
 // Current Wish State
@@ -85,7 +86,6 @@ async function loadWishData() {
     if (wishId) {
         const fbUrl = getFirebaseDatabaseUrl();
         
-        // A. Try Firebase REST API
         if (fbUrl) {
             try {
                 const restEndpoint = `${fbUrl}/wishes/${encodeURIComponent(wishId)}.json`;
@@ -103,7 +103,6 @@ async function loadWishData() {
             }
         }
 
-        // B. Try Firebase SDK
         if (window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.databaseURL) {
             try {
                 if (!firebase.apps.length) {
@@ -133,11 +132,27 @@ async function loadWishData() {
             console.log("Loaded scheduled birthday matching TODAY:", wishData);
             return;
         }
+
+        const latestWish = activeScheduled[activeScheduled.length - 1];
+        if (latestWish) {
+            wishData = { ...DEFAULT_WISH_DATA, ...latestWish };
+            console.log("Loaded latest active scheduled wish:", wishData);
+            return;
+        }
     }
 
-    // 4. If no active birthday link or scheduled date matches today, load clean neutral empty state
+    // 4. Fallback Local Storage preview or clean neutral state
+    const localSaved = localStorage.getItem('last_created_wish');
+    if (localSaved && !encodedData && !wishId) {
+        try {
+            const parsedLocal = JSON.parse(localSaved);
+            wishData = { ...DEFAULT_WISH_DATA, ...parsedLocal };
+            console.log("Loaded wish data from localStorage preview:", wishData);
+            return;
+        } catch (e) {}
+    }
+
     wishData = { ...DEFAULT_WISH_DATA };
-    console.log("No active birthday found for today, displaying clean neutral template.");
 }
 
 // Render dynamic elements into the DOM
@@ -227,6 +242,9 @@ function renderWishPage() {
         const dateContainer = document.querySelector(".date__of__birth span");
         if (dateContainer) dateContainer.textContent = "Special Day";
     }
+
+    // 6. Setup Audio Player
+    setupAudioPlayer();
 }
 
 // Generate circular rotating text dynamically
@@ -281,7 +299,189 @@ function startDateAnimation(dateStr) {
     }, 11000);
 }
 
-// Modal open / close handlers
+/* =========================================================
+   SKY STICKS & FIREWORKS CANVAS ANIMATION ENGINE
+   ========================================================= */
+let canvas, ctx;
+let rockets = [];
+let particles = [];
+let animId = null;
+
+function initSkySticksCanvas() {
+    canvas = document.getElementById('skysticks-canvas');
+    if (!canvas) return;
+    ctx = canvas.getContext('2d');
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+}
+
+function resizeCanvas() {
+    if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+}
+
+class Rocket {
+    constructor(x, targetY, color) {
+        this.x = x;
+        this.y = canvas ? canvas.height : window.innerHeight;
+        this.targetY = targetY;
+        this.speed = Math.random() * 4 + 8;
+        this.color = color;
+        this.size = 3;
+        this.trail = [];
+    }
+
+    update() {
+        this.trail.push({ x: this.x, y: this.y });
+        if (this.trail.length > 10) this.trail.shift();
+
+        this.y -= this.speed;
+
+        if (this.y <= this.targetY) {
+            explodeRocket(this.x, this.y, this.color);
+            return false;
+        }
+        return true;
+    }
+
+    draw() {
+        ctx.beginPath();
+        for (let i = 0; i < this.trail.length; i++) {
+            const pt = this.trail[i];
+            const alpha = i / this.trail.length;
+            ctx.fillStyle = this.color;
+            ctx.globalAlpha = alpha;
+            ctx.fillRect(pt.x, pt.y, this.size, this.size * 4);
+        }
+        ctx.globalAlpha = 1;
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(this.x - 1, this.y, this.size + 2, this.size * 5);
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 6 + 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.02 + 0.015;
+        this.color = color;
+        this.size = Math.random() * 3 + 2;
+    }
+
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.08;
+        this.alpha -= this.decay;
+        return this.alpha > 0;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+}
+
+function explodeRocket(x, y, color) {
+    const particleCount = 40;
+    for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
+function spawnSkyStick() {
+    if (!canvas) return;
+    const x = Math.random() * (canvas.width * 0.8) + (canvas.width * 0.1);
+    const targetY = Math.random() * (canvas.height * 0.4) + (canvas.height * 0.1);
+    
+    const isBoy = document.body.classList.contains('theme-boy');
+    const colors = isBoy ? 
+        ['#1E88E5', '#42A5F5', '#90CAF9', '#FFD700', '#FFFFFF', '#00E5FF'] : 
+        ['#FF7882', '#FF5362', '#FFB6C1', '#FFD700', '#FFFFFF', '#FF4081'];
+    
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    rockets.push(new Rocket(x, targetY, color));
+}
+
+function animateSkySticks() {
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    rockets = rockets.filter(r => {
+        const alive = r.update();
+        if (alive) r.draw();
+        return alive;
+    });
+
+    particles = particles.filter(p => {
+        const alive = p.update();
+        if (alive) p.draw();
+        return alive;
+    });
+
+    animId = requestAnimationFrame(animateSkySticks);
+}
+
+function triggerSkySticksBurst() {
+    initSkySticksCanvas();
+    if (!animId) animateSkySticks();
+
+    let count = 0;
+    const interval = setInterval(() => {
+        spawnSkyStick();
+        count++;
+        if (count >= 14) clearInterval(interval);
+    }, 220);
+}
+
+/* =========================================================
+   MP3 AUDIO MUSIC CONTROLLER
+   ========================================================= */
+function setupAudioPlayer() {
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('music-toggle-btn');
+    if (!audio || !btn) return;
+
+    const musicUrl = wishData.music || "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
+    audio.src = musicUrl;
+
+    btn.onclick = () => {
+        if (audio.paused) {
+            audio.play().then(() => {
+                btn.classList.add('playing');
+            }).catch(e => console.warn("Audio play blocked:", e));
+        } else {
+            audio.pause();
+            btn.classList.remove('playing');
+        }
+    };
+}
+
+function playWishAudioAndEffects() {
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('music-toggle-btn');
+    if (audio) {
+        audio.play().then(() => {
+            if (btn) btn.classList.add('playing');
+        }).catch(e => console.warn("Auto audio play blocked:", e));
+    }
+    triggerSkySticksBurst();
+}
+
+// Modal open / close handlers & Event Trigger
 function setupModalEvents() {
     const mailBox = document.querySelector('#btn__letter');
     const boxmail = document.querySelector('.boxMail');
@@ -291,6 +491,9 @@ function setupModalEvents() {
         mailBox.onclick = function (e) {
             e.preventDefault();
             boxmail.classList.add('active');
+            
+            // Trigger Music Playback & Sky Sticks Animation!
+            playWishAudioAndEffects();
         };
     }
 
@@ -300,7 +503,6 @@ function setupModalEvents() {
         };
     }
 
-    // Close when clicking outside card
     if (boxmail) {
         boxmail.onclick = function (e) {
             if (e.target === boxmail) {
@@ -315,4 +517,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadWishData();
     renderWishPage();
     setupModalEvents();
+    initSkySticksCanvas();
 });

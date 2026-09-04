@@ -53,6 +53,53 @@ body {
     background-image:linear-gradient(var(--color-pink), var(--color-pink));
     transition: background-color 0.4s ease;
 }
+
+/* Sky Sticks Fireworks Fullscreen Canvas */
+#skysticks-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 99999;
+}
+
+/* Music Toggle Floating Button */
+#music-toggle-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 999999;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--color-text-pink);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--color-black);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+#music-toggle-btn:hover {
+    transform: scale(1.1) rotate(10deg);
+    background: var(--color-text-pink);
+    color: white;
+}
+
+#music-toggle-btn.playing i {
+    animation: musicSpin 3s linear infinite;
+}
+
+@keyframes musicSpin {
+    100% { transform: rotate(360deg); }
+}
+
 #wrapper{
     position: relative;
     background-color: transparent;
