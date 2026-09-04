@@ -1,16 +1,12 @@
-// Firebase Configuration Template
-// You can replace the credentials below with your own Firebase project credentials.
-// If left as null/default, the app automatically uses encoded URL links & LocalStorage!
+// Firebase Realtime Database Configuration
+// Paste your Firebase Realtime Database URL below.
+// Example: "https://my-birthday-app-default-rtdb.firebaseio.com" or "https://my-app-default-rtdb.asia-southeast1.firebasedatabase.app"
 
 const firebaseConfig = {
-    apiKey: "YOUR_FIREBASE_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    databaseURL: "https://birthday-wish-02-default-rtdb.firebaseio.com",
+    apiKey: "",
+    projectId: ""
 };
 
-// Global Firebase initialization helper
+// Global helper
 window.firebaseAppConfig = firebaseConfig;

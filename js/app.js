@@ -1,15 +1,6 @@
 /**
- * Birthday Wish Web Application - Dynamic Renderer & Controller
+ * Birthday Wish Web Application - Dynamic Renderer & Controller (Firebase Edition)
  */
-
-// VPS Data Store Candidate Endpoints (Port 80, Port 8000, Port 8080, Relative)
-const VPS_API_CANDIDATES = [
-    window.VPS_API_URL,
-    "http://162.35.189.85/api",
-    "http://162.35.189.85:8000/api",
-    "http://162.35.189.85:8080/api",
-    "api"
-].filter(Boolean);
 
 // Default Fallback Wish Data
 const DEFAULT_WISH_DATA = {
@@ -37,6 +28,18 @@ function decodeWishData(encodedStr) {
     }
 }
 
+// Get active Firebase Realtime Database URL
+function getFirebaseDatabaseUrl() {
+    const localDbUrl = localStorage.getItem('firebase_db_url');
+    if (localDbUrl && localDbUrl.trim() !== "") {
+        return localDbUrl.trim().replace(/\/+$/, '');
+    }
+    if (window.firebaseAppConfig && window.firebaseAppConfig.databaseURL && !window.firebaseAppConfig.databaseURL.includes('YOUR_PROJECT_ID')) {
+        return window.firebaseAppConfig.databaseURL.trim().replace(/\/+$/, '');
+    }
+    return null;
+}
+
 // Helper to retrieve active scheduled birthdays and purge expired items (> 24h past target date)
 function getActiveScheduledBirthdays() {
     const raw = localStorage.getItem('scheduled_birthdays');
@@ -62,7 +65,7 @@ function getActiveScheduledBirthdays() {
     }
 }
 
-// Fetch Wish Data from URL params, VPS API (162.35.189.85), Firebase, or Scheduled Local List
+// Fetch Wish Data from Firebase Realtime Database, URL base64, or Scheduled Local List
 async function loadWishData() {
     const urlParams = new URLSearchParams(window.location.search);
     const encodedData = urlParams.get('data');
@@ -78,27 +81,30 @@ async function loadWishData() {
         }
     }
 
-    // 2. Database Fetch by ID (VPS Data Store API OR Firebase)
+    // 2. Fetch from Firebase Realtime Database by ID (REST API & SDK)
     if (wishId) {
-        // Try VPS Data Store API Candidate Ports
-        for (const baseUrl of VPS_API_CANDIDATES) {
+        const fbUrl = getFirebaseDatabaseUrl();
+        
+        // A. Try Firebase REST API (Works globally on all networks without SDK overhead)
+        if (fbUrl) {
             try {
-                const vpsResponse = await fetch(`${baseUrl}/get.php?id=${encodeURIComponent(wishId)}`);
-                if (vpsResponse.ok) {
-                    const json = await vpsResponse.json();
-                    if (json && json.status === 'success' && json.data) {
-                        wishData = { ...DEFAULT_WISH_DATA, ...json.data };
-                        console.log(`Loaded wish data from VPS Data Store (${baseUrl}):`, wishData);
+                const restEndpoint = `${fbUrl}/wishes/${encodeURIComponent(wishId)}.json`;
+                const response = await fetch(restEndpoint);
+                if (response.ok) {
+                    const json = await response.json();
+                    if (json) {
+                        wishData = { ...DEFAULT_WISH_DATA, ...json };
+                        console.log("Loaded wish data from Firebase REST API:", wishData);
                         return;
                     }
                 }
             } catch (e) {
-                // Continue to next candidate port
+                console.warn("Firebase REST fetch error:", e);
             }
         }
 
-        // Try Firebase Database
-        if (window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+        // B. Try Firebase SDK
+        if (window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.databaseURL) {
             try {
                 if (!firebase.apps.length) {
                     firebase.initializeApp(window.firebaseAppConfig);
@@ -107,11 +113,11 @@ async function loadWishData() {
                 const snapshot = await db.ref('wishes/' + wishId).once('value');
                 if (snapshot.exists()) {
                     wishData = { ...DEFAULT_WISH_DATA, ...snapshot.val() };
-                    console.log("Loaded wish data from Firebase:", wishData);
+                    console.log("Loaded wish data from Firebase SDK:", wishData);
                     return;
                 }
             } catch (err) {
-                console.warn("Firebase fetch error:", err);
+                console.warn("Firebase SDK fetch error:", err);
             }
         }
     }

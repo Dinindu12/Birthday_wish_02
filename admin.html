@@ -530,29 +530,28 @@
         .btn-sm-view { background: #4A5568; color: white; }
         .btn-sm-delete { background: #E53E3E; color: white; }
 
-        /* Accordion */
-        .accordion-toggle {
+        /* Firebase Setup Box */
+        .firebase-box {
             background: #EDF2F7;
-            border: none;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #4A5568;
-            text-align: left;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border: 2px solid #CBD5E0;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 25px;
         }
 
-        .accordion-content {
-            display: none;
-            padding: 15px;
-            background: #F8FAFC;
-            border-radius: 8px;
-            margin-top: 8px;
-            border: 1px solid #E2E8F0;
+        .firebase-box h3 {
+            font-size: 1rem;
+            color: #2D3748;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .firebase-box p {
+            font-size: 0.83rem;
+            color: #4A5568;
+            margin-bottom: 12px;
         }
 
         /* Footer */
@@ -609,6 +608,18 @@
             <p>Customize Girl (Pink) & Boy (Blue) themes, dynamic names, dates, photos & wishes!</p>
         </div>
 
+        <!-- Firebase Primary Database Setup Box -->
+        <div class="firebase-box">
+            <h3><i class="fa-solid fa-fire" style="color: #FF6D00;"></i> Firebase Realtime Database Setup (Primary Storage)</h3>
+            <p>Enter your Firebase Realtime Database URL to save wishes globally with clean short IDs (`?id=-Nxyz123`)!</p>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="fb_db_url" placeholder="e.g. https://your-project-default-rtdb.firebaseio.com" style="flex: 1;" onchange="saveFirebaseUrl(this.value)">
+                <button type="button" class="btn-copy" style="background: #FF6D00;" onclick="saveFirebaseUrl(document.getElementById('fb_db_url').value)">
+                    <i class="fa-solid fa-floppy-disk"></i> Save DB URL
+                </button>
+            </div>
+        </div>
+
         <form id="wish-form" onsubmit="event.preventDefault(); generateLink();">
             <div class="form-grid">
                 
@@ -658,7 +669,7 @@
                     <div class="photo-preview-box">
                         <img id="photo-preview" class="photo-preview" src="./images/unnamed.png" alt="Preview">
                         <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                            <input type="text" id="photo_url" placeholder="Paste Image URL here (Recommended for light links)..." oninput="previewImage(this.value)">
+                            <input type="text" id="photo_url" placeholder="Paste Image URL here (Recommended)..." oninput="previewImage(this.value)">
                             <input type="file" id="photo_file" accept="image/*" onchange="handleFileUpload(event)">
                         </div>
                     </div>
@@ -674,29 +685,6 @@
                 <div class="form-group full-width">
                     <label for="letter_text"><i class="fa-solid fa-envelope-open-text"></i> Birthday Wish Letter Message</label>
                     <textarea id="letter_text" rows="4" placeholder="Write your heartfelt birthday wish here..." required>Happy birthday 🥳🎂🥳 the day you came into my life I was not really attached to you, but day by day you became so close to my heart. I wish you all the happiness, joy, and success in the world! May all your dreams come true! 🎈🎂🎈 Don't be sad, always stay happy and keep smiling! 😌✨</textarea>
-                </div>
-
-                <!-- 9. Firebase Settings (Optional) -->
-                <div class="form-group full-width">
-                    <button type="button" class="accordion-toggle" onclick="toggleFirebaseSection()">
-                        <span><i class="fa-solid fa-database"></i> Database / Firebase / VPS Setup</span>
-                        <i class="fa-solid fa-chevron-down" id="fb-arrow"></i>
-                    </button>
-                    <div id="firebase-accordion" class="accordion-content">
-                        <p style="font-size: 0.85rem; color: #718096; margin-bottom: 10px;">
-                            Saves wish data to Firebase Realtime Database or VPS PHP backend (`api/save.php`) to generate ultra-short, clean links (`?id=wish_xxx`)!
-                        </p>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label>Firebase Database URL</label>
-                                <input type="text" id="fb_db_url" placeholder="https://your-app-default-rtdb.firebaseio.com">
-                            </div>
-                            <div class="form-group">
-                                <label>Firebase API Key</label>
-                                <input type="text" id="fb_api_key" placeholder="AIzaSy...">
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
             </div>
@@ -751,6 +739,12 @@
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('schedule_target_date').value = todayStr;
             
+            // Load saved Firebase URL if available
+            const savedFb = localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
+            if (savedFb && !savedFb.includes('YOUR_PROJECT_ID')) {
+                document.getElementById('fb_db_url').value = savedFb;
+            }
+
             renderScheduledBirthdays();
         });
 
@@ -787,6 +781,14 @@
             checkAuth();
         }
 
+        function saveFirebaseUrl(url) {
+            if (url) {
+                const cleanUrl = url.trim().replace(/\/+$/, '');
+                localStorage.setItem('firebase_db_url', cleanUrl);
+                alert("🔥 Firebase Database URL saved successfully!");
+            }
+        }
+
         function updateThemePreview(gender) {
             const colorPicker = document.getElementById('theme_color');
             const previewImg = document.getElementById('photo-preview');
@@ -817,7 +819,6 @@
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         
-                        // Limit maximum thumbnail size to 120px for light base64 string (< 3KB)
                         const maxDim = 120;
                         let width = img.width;
                         let height = img.height;
@@ -848,18 +849,6 @@
             }
         }
 
-        function toggleFirebaseSection() {
-            const content = document.getElementById('firebase-accordion');
-            const arrow = document.getElementById('fb-arrow');
-            if (content.style.display === 'block') {
-                content.style.display = 'none';
-                arrow.className = 'fa-solid fa-chevron-down';
-            } else {
-                content.style.display = 'block';
-                arrow.className = 'fa-solid fa-chevron-up';
-            }
-        }
-
         function getScheduledList() {
             const raw = localStorage.getItem('scheduled_birthdays');
             if (!raw) return [];
@@ -884,52 +873,46 @@
             }
         }
 
-        // Build safe wish link preventing URI Too Long errors
+        // Build safe wish link via Firebase Realtime Database REST API or Base64 Fallback
         async function buildSafeWishUrl(wishObj) {
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
-            const candidates = [
-                window.VPS_API_URL,
-                "http://162.35.189.85/api",
-                "http://162.35.189.85:8000/api",
-                "http://162.35.189.85:8080/api",
-                "api"
-            ].filter(Boolean);
+            const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url');
 
-            // 1. Try VPS Data Store PHP API candidates
-            for (const apiUrl of candidates) {
+            // 1. Primary: Save to Firebase Realtime Database via REST API (Instant & Zero Config overhead)
+            if (fbUrl && fbUrl.trim() !== "") {
                 try {
-                    const res = await fetch(`${apiUrl}/save.php`, {
+                    const cleanFbUrl = fbUrl.trim().replace(/\/+$/, '');
+                    const restEndpoint = `${cleanFbUrl}/wishes.json`;
+                    
+                    const res = await fetch(restEndpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(wishObj)
                     });
+
                     if (res.ok) {
                         const json = await res.json();
-                        if (json && json.status === 'success' && json.id) {
-                            return `${baseUrl}?id=${json.id}`;
+                        if (json && json.name) {
+                            console.log("Saved to Firebase DB via REST API with ID:", json.name);
+                            return `${baseUrl}?id=${encodeURIComponent(json.name)}`;
                         }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn("Firebase REST save error:", e);
+                }
             }
 
-            // 2. Try Firebase Database
-            const fbDbUrl = document.getElementById('fb_db_url').value.trim();
-            const fbApiKey = document.getElementById('fb_api_key').value.trim();
-
-            if (fbDbUrl && fbApiKey && window.firebase) {
+            // 2. Firebase SDK Fallback
+            if (window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.databaseURL) {
                 try {
-                    const customConfig = {
-                        apiKey: fbApiKey,
-                        databaseURL: fbDbUrl
-                    };
                     if (!firebase.apps.length) {
-                        firebase.initializeApp(customConfig);
+                        firebase.initializeApp(window.firebaseAppConfig);
                     }
                     const newWishRef = firebase.database().ref('wishes').push();
                     await newWishRef.set(wishObj);
                     return `${baseUrl}?id=${newWishRef.key}`;
                 } catch (e) {
-                    console.warn("Firebase save error:", e);
+                    console.warn("Firebase SDK save error:", e);
                 }
             }
 
