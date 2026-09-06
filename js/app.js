@@ -519,7 +519,7 @@ function setupAudioPlayer() {
 
     // Regular MP3 audio (fallback)
     audio.style.display = '';
-    const fallbackUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+    const fallbackUrl = "https://youtu.be/i8o956Fd-os?si=NL95PFhFsZcJM12d";
     const audioUrl = musicUrl || fallbackUrl;
 
     audio.preload = "auto";
