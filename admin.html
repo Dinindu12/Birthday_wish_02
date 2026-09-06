@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Panel - Birthday Wishes 🎂</title>
+    <title>Admin Panel - Firebase 🎂</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
@@ -14,6 +14,7 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         /* ===== RESET & BASE ===== */
@@ -26,36 +27,178 @@
             font-family: 'Sriracha', cursive;
             background: #fef6f5;
             min-height: 100vh;
-            padding: 30px 20px;
+            padding: 20px;
         }
+
+        /* ===== BACK TO PAGE BUTTON (Top Left) ===== */
+        .back-btn {
+            position: fixed;
+            top: 18px;
+            left: 18px;
+            z-index: 999;
+            background: #FF7882;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            border: 3px solid #333;
+            font-family: 'Sriracha', cursive;
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: 0.3s;
+        }
+        .back-btn:hover {
+            background: #333;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .back-btn i {
+            font-size: 1.1rem;
+        }
+
+        /* ===== LOGIN CONTAINER ===== */
+        .login-container {
+            max-width: 420px;
+            margin: 80px auto;
+            background: #fff;
+            padding: 40px 35px;
+            border-radius: 32px;
+            box-shadow: 0 20px 60px rgba(255, 120, 130, 0.2);
+            border: 1px solid rgba(255, 120, 130, 0.2);
+            display: none;
+        }
+        .login-container.active {
+            display: block;
+        }
+        .login-container h2 {
+            font-family: 'Titan One', cursive;
+            color: #FF7882;
+            font-size: 2.2rem;
+            text-align: center;
+            text-shadow: 2px 2px 0 #333;
+            margin-bottom: 5px;
+        }
+        .login-container p.sub {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        .login-container .form-group {
+            margin-bottom: 18px;
+        }
+        .login-container .form-group label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+            color: #444;
+        }
+        .login-container .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #eee;
+            border-radius: 14px;
+            font-family: 'Sriracha', cursive;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+        .login-container .form-group input:focus {
+            border-color: #FF7882;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 120, 130, 0.15);
+        }
+        .login-container .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #FF7882;
+            color: #fff;
+            border: 3px solid #333;
+            border-radius: 50px;
+            font-family: 'Sriracha', cursive;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 6px 0 #333;
+        }
+        .login-container .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #333;
+        }
+        .login-container .btn-login:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #333;
+        }
+        .login-container .error-msg {
+            color: #ff4444;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 0.95rem;
+        }
+        .login-container .logout-row {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .login-container .logout-row button {
+            background: none;
+            border: none;
+            color: #FF7882;
+            font-family: 'Sriracha', cursive;
+            font-size: 1rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* ===== ADMIN DASHBOARD ===== */
         .admin-container {
-            max-width: 900px;
-            margin: 0 auto;
+            max-width: 1100px;
+            margin: 30px auto 0;
             background: #fff;
             border-radius: 32px;
-            padding: 40px 45px;
+            padding: 35px 40px;
             box-shadow: 0 20px 60px rgba(255, 120, 130, 0.15);
             border: 1px solid rgba(255, 120, 130, 0.2);
+            display: none;
         }
-        h1 {
-            font-family: 'Titan One', cursive;
-            font-size: 2.8rem;
-            color: #FF7882;
-            text-align: center;
-            letter-spacing: 2px;
-            text-shadow: 3px 3px 0 #333;
-            margin-bottom: 8px;
+        .admin-container.active {
+            display: block;
         }
-        .sub-title {
-            text-align: center;
-            font-size: 1.1rem;
-            color: #666;
-            margin-bottom: 30px;
-            border-bottom: 2px dashed #f0d0d0;
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 2px dashed #f0e0e0;
             padding-bottom: 15px;
+            margin-bottom: 25px;
         }
-        .sub-title i {
+        .admin-header h1 {
+            font-family: 'Titan One', cursive;
+            font-size: 2.5rem;
             color: #FF7882;
+            text-shadow: 3px 3px 0 #333;
+        }
+        .admin-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1rem;
+        }
+        .admin-header .user-info button {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 30px;
+            font-family: 'Sriracha', cursive;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .admin-header .user-info button:hover {
+            background: #FF7882;
         }
 
         /* ===== FORM ===== */
@@ -104,7 +247,7 @@
         }
         .form-group textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 90px;
         }
         .radio-group {
             display: flex;
@@ -129,8 +272,8 @@
             gap: 12px;
         }
         .color-picker-wrapper input[type="color"] {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             padding: 2px;
             border-radius: 50%;
             border: 3px solid #ddd;
@@ -138,7 +281,6 @@
             background: none;
         }
 
-        /* ===== BUTTONS ===== */
         .btn-row {
             display: flex;
             gap: 15px;
@@ -173,14 +315,11 @@
             transform: translateY(4px);
             box-shadow: 0 2px 0 #333;
         }
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-            box-shadow: 0 6px 0 #999;
-        }
-        .btn-secondary:hover {
-            background: #d0d0d0;
-            transform: translateY(-2px);
+        .btn-primary:disabled {
+            opacity: 0.6;
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #333;
+            cursor: not-allowed;
         }
         .btn-danger {
             background: #ff4444;
@@ -191,116 +330,96 @@
             background: #ee3333;
             transform: translateY(-2px);
         }
-        .btn:disabled {
-            opacity: 0.6;
-            transform: translateY(2px);
-            box-shadow: 0 3px 0 #333;
-            cursor: not-allowed;
-        }
 
-        /* ===== GENERATED LINK ===== */
-        .link-container {
-            margin-top: 25px;
-            padding: 20px;
-            background: #f0f7ff;
-            border-radius: 20px;
-            border: 2px dashed #FF7882;
-            display: none;
-        }
-        .link-container.show {
-            display: block;
-        }
-        .link-container label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 6px;
-        }
-        .link-container .link-box {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .link-container input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #ccc;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            background: #fff;
-            font-family: 'Sriracha', cursive;
-        }
-        .link-container .copy-btn {
-            background: #333;
-            color: #fff;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-family: 'Sriracha', cursive;
-            transition: 0.3s;
-        }
-        .link-container .copy-btn:hover {
-            background: #FF7882;
-        }
-
-        /* ===== SCHEDULED LIST ===== */
-        .scheduled-section {
-            margin-top: 35px;
+        /* ===== WISH LIST (Firebase Data) ===== */
+        .list-section {
+            margin-top: 40px;
             border-top: 2px solid #f0e0e0;
             padding-top: 25px;
         }
-        .scheduled-section h3 {
+        .list-section h3 {
             font-family: 'Dancing Script', cursive;
             font-size: 2rem;
             color: #FF7882;
-            margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 12px;
+            margin-bottom: 15px;
         }
-        .schedule-item {
+        .wish-table-wrap {
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            background: #f5e6e6;
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 3px solid #FF7882;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: middle;
+        }
+        .wish-row:hover {
             background: #fafafa;
-            padding: 12px 18px;
-            border-radius: 14px;
-            border-left: 6px solid #FF7882;
-            margin-bottom: 10px;
+        }
+        .wish-row .actions {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            gap: 8px;
             flex-wrap: wrap;
         }
-        .schedule-item .info {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .schedule-item .info strong {
-            color: #333;
-        }
-        .schedule-item .badge {
-            background: #FF7882;
-            color: #fff;
-            padding: 2px 14px;
+        .wish-row .actions .btn-sm {
+            padding: 6px 14px;
             border-radius: 30px;
-            font-size: 0.8rem;
             border: 2px solid #333;
-        }
-        .schedule-item .delete-sched {
-            color: #ff4444;
+            font-family: 'Sriracha', cursive;
+            font-size: 0.8rem;
             cursor: pointer;
-            font-size: 1.2rem;
             transition: 0.3s;
-            background: none;
-            border: none;
+            background: #fff;
         }
-        .schedule-item .delete-sched:hover {
-            transform: scale(1.2);
+        .wish-row .actions .btn-sm.delete {
+            color: #ff4444;
+            border-color: #ff4444;
+        }
+        .wish-row .actions .btn-sm.delete:hover {
+            background: #ff4444;
+            color: #fff;
+        }
+        .wish-row .actions .btn-sm.view {
+            color: #1E88E5;
+            border-color: #1E88E5;
+        }
+        .wish-row .actions .btn-sm.view:hover {
+            background: #1E88E5;
+            color: #fff;
         }
         .empty-msg {
-            color: #999;
-            font-style: italic;
             text-align: center;
-            padding: 20px;
+            color: #999;
+            padding: 30px;
+            font-style: italic;
+        }
+        .badge-girl {
+            background: #FF7882;
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            border: 2px solid #333;
+        }
+        .badge-boy {
+            background: #1E88E5;
+            color: #fff;
+            padding: 2px 12px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            border: 2px solid #333;
         }
 
         /* ===== RESPONSIVE ===== */
@@ -311,8 +430,8 @@
             .form-grid {
                 grid-template-columns: 1fr;
             }
-            h1 {
-                font-size: 2rem;
+            .admin-header h1 {
+                font-size: 1.8rem;
             }
             .btn-row {
                 flex-direction: column;
@@ -321,35 +440,75 @@
             .btn {
                 justify-content: center;
             }
-            .link-container .link-box {
+            .back-btn {
+                top: 10px;
+                left: 10px;
+                padding: 6px 14px;
+                font-size: 0.8rem;
+            }
+            .admin-header {
                 flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
             }
         }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h1>🎂 Admin Panel</h1>
-        <p class="sub-title"><i class="fa-regular fa-pen-to-square"></i> Create &amp; Schedule Birthday Wishes</p>
+    <!-- ===== BACK TO PAGE BUTTON ===== -->
+    <a href="index.html" class="back-btn">
+        <i class="fa-solid fa-arrow-left"></i> Back to Page
+    </a>
 
-        <!-- ===== FORM ===== -->
-        <form id="wishForm" onsubmit="generateLink(event)">
+    <!-- ============================================= -->
+    <!-- LOGIN CONTAINER                               -->
+    <!-- ============================================= -->
+    <div class="login-container active" id="loginContainer">
+        <h2>🔐 Admin Login</h2>
+        <p class="sub">Sign in to manage birthday wishes</p>
+
+        <div class="form-group">
+            <label><i class="fa-regular fa-envelope"></i> Email</label>
+            <input type="email" id="loginEmail" placeholder="admin@example.com" />
+        </div>
+        <div class="form-group">
+            <label><i class="fa-regular fa-lock"></i> Password</label>
+            <input type="password" id="loginPassword" placeholder="••••••••" />
+        </div>
+
+        <button class="btn-login" id="loginBtn"><i class="fa-regular fa-right-to-bracket"></i> Sign In</button>
+        <div class="error-msg" id="loginError"></div>
+
+        <div class="logout-row">
+            <span style="color:#999;">Don't have an account?</span>
+            <button id="showSignupBtn">Create one</button>
+        </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- ADMIN DASHBOARD (Visible after login)         -->
+    <!-- ============================================= -->
+    <div class="admin-container" id="adminContainer">
+        <div class="admin-header">
+            <h1>🎂 Admin Panel</h1>
+            <div class="user-info">
+                <span id="userEmailDisplay">user@example.com</span>
+                <button onclick="logoutUser()"><i class="fa-regular fa-right-from-bracket"></i> Logout</button>
+            </div>
+        </div>
+
+        <!-- ===== CREATE WISH FORM ===== -->
+        <form id="wishForm" onsubmit="createWish(event)">
             <div class="form-grid">
-
-                <!-- Name -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-user"></i> Name</label>
-                    <input type="text" id="wishName" placeholder="e.g. Dinindu" value="Friend" />
+                    <input type="text" id="wishName" placeholder="e.g. Dinindu" value="Friend" required />
                 </div>
-
-                <!-- Date of Birth -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-calendar"></i> Date of Birth</label>
                     <input type="date" id="wishDate" />
                 </div>
-
-                <!-- Gender -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-face-smile"></i> Gender</label>
                     <div class="radio-group">
@@ -357,20 +516,14 @@
                         <label><input type="radio" name="gender" value="boy" /> 👦 Boy</label>
                     </div>
                 </div>
-
-                <!-- Photo URL -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-image"></i> Photo URL</label>
                     <input type="text" id="wishPhoto" placeholder="./images/unnamed.png" value="./images/unnamed.png" />
                 </div>
-
-                <!-- Card Title -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-rectangle-ad"></i> Card Title</label>
                     <input type="text" id="wishCardTitle" placeholder="Happy Birthday!" value="Happy Birthday!" />
                 </div>
-
-                <!-- Theme Color -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-palette"></i> Theme Color</label>
                     <div class="color-picker-wrapper">
@@ -378,60 +531,42 @@
                         <span id="colorDisplay" style="font-size:0.9rem;">#FF7882</span>
                     </div>
                 </div>
-
-                <!-- Music URL -->
                 <div class="form-group full-width">
                     <label><i class="fa-regular fa-music"></i> Background Music URL</label>
                     <input type="text" id="wishMusic" placeholder="https://...mp3" value="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" />
                 </div>
-
-                <!-- Wish Letter -->
                 <div class="form-group full-width">
                     <label><i class="fa-regular fa-envelope"></i> Wish Letter</label>
                     <textarea id="wishLetter" placeholder="Write your heartfelt birthday message here...">Wishing you a day filled with love, joy, and lots of cake! 🎂✨</textarea>
                 </div>
-
-                <!-- Target Date (Scheduling) -->
                 <div class="form-group full-width">
                     <label><i class="fa-regular fa-clock"></i> Schedule for Date (Optional)</label>
                     <input type="date" id="wishTargetDate" />
-                    <small style="color:#888;">Leave empty to create an unscheduled wish.</small>
+                    <small style="color:#888;">Leave empty for immediate wish.</small>
                 </div>
-
             </div>
-
             <div class="btn-row">
-                <button type="submit" class="btn btn-primary" id="generateBtn">
-                    <i class="fa-regular fa-link"></i> Generate Link
-                </button>
-                <button type="button" class="btn btn-danger" onclick="clearAllStorage()">
-                    <i class="fa-regular fa-trash-can"></i> Clear Storage
+                <button type="submit" class="btn btn-primary" id="createBtn">
+                    <i class="fa-regular fa-cloud-upload"></i> Save to Firebase
                 </button>
             </div>
         </form>
 
-        <!-- ===== GENERATED LINK OUTPUT ===== -->
-        <div class="link-container" id="linkContainer">
-            <label><i class="fa-regular fa-link"></i> Your Shareable Link:</label>
-            <div class="link-box">
-                <input type="text" id="generatedLink" readonly />
-                <button class="copy-btn" onclick="copyLink()"><i class="fa-regular fa-copy"></i> Copy</button>
+        <!-- ===== LIST OF WISHES (FROM FIREBASE) ===== -->
+        <div class="list-section">
+            <h3><i class="fa-regular fa-list"></i> All Wishes (Firebase)</h3>
+            <div id="wishListContainer">
+                <div class="empty-msg">Loading wishes...</div>
             </div>
-        </div>
-
-        <!-- ===== SCHEDULED BIRTHDAYS LIST ===== -->
-        <div class="scheduled-section">
-            <h3><i class="fa-regular fa-calendar-check"></i> Scheduled Wishes</h3>
-            <div id="scheduledList"></div>
         </div>
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT - FULL FIX (QuotaExceededError HANDLED)            -->
+    <!-- JAVASCRIPT - FIREBASE AUTH + CRUD (FULL FIREBASE FIRST)      -->
     <!-- ============================================================ -->
     <script>
         // ============================================
-        // FIREBASE CONFIG (Your provided config)
+        // FIREBASE CONFIG
         // ============================================
         const firebaseConfig = {
             apiKey: "AIzaSyBD1DyGnvlNoDRwumUsnHKsU1TbBo-39fs",
@@ -442,269 +577,254 @@
             appId: "1:196544487511:web:6604014975e99a7ec9c312"
         };
 
-        // Init Firebase
+        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // ============================================
-        // SAFE LOCALSTORAGE SETTER (FIXES QUOTA ERROR)
+        // DOM REFS
         // ============================================
-        function safeSetItem(key, value) {
-            try {
-                localStorage.setItem(key, JSON.stringify(value));
-                return true;
-            } catch (e) {
-                if (e.name === 'QuotaExceededError') {
-                    console.warn('⚠️ Storage quota exceeded for key:', key);
+        const loginContainer = document.getElementById('loginContainer');
+        const adminContainer = document.getElementById('adminContainer');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const showSignupBtn = document.getElementById('showSignupBtn');
+        const userEmailDisplay = document.getElementById('userEmailDisplay');
+        const wishListContainer = document.getElementById('wishListContainer');
 
-                    // Auto-cleanup strategy: remove oldest scheduled items
-                    try {
-                        const raw = localStorage.getItem('scheduled_birthdays');
-                        if (raw) {
-                            const list = JSON.parse(raw);
-                            if (Array.isArray(list) && list.length > 3) {
-                                // Keep only latest 3 to free space
-                                const trimmed = list.slice(-3);
-                                localStorage.setItem('scheduled_birthdays', JSON.stringify(trimmed));
-                                // Try saving again
-                                localStorage.setItem(key, JSON.stringify(value));
-                                return true;
-                            }
-                        }
-                        // If that fails, clear everything
-                        localStorage.clear();
-                        localStorage.setItem(key, JSON.stringify(value));
-                        return true;
-                    } catch (finalErr) {
-                        alert('⚠️ ඔබගේ බ්‍රවුසරයේ ගබඩාව සම්පූර්ණයෙන්ම පිරී ඇත.\nකරුණාකර "Clear Storage" බොත්තම ඔබා නැවත උත්සාහ කරන්න.');
-                        return false;
-                    }
-                }
-                console.error('Unexpected localStorage error:', e);
-                return false;
-            }
-        }
+        // Form fields
+        const wishName = document.getElementById('wishName');
+        const wishDate = document.getElementById('wishDate');
+        const wishPhoto = document.getElementById('wishPhoto');
+        const wishCardTitle = document.getElementById('wishCardTitle');
+        const wishLetter = document.getElementById('wishLetter');
+        const wishThemeColor = document.getElementById('wishThemeColor');
+        const wishMusic = document.getElementById('wishMusic');
+        const wishTargetDate = document.getElementById('wishTargetDate');
+        const colorDisplay = document.getElementById('colorDisplay');
+        const createBtn = document.getElementById('createBtn');
 
         // ============================================
-        // GENERATE LINK (MAIN FUNCTION)
+        // COLOR PICKER LIVE UPDATE
         // ============================================
-        async function generateLink(event) {
-            event.preventDefault();
+        wishThemeColor.addEventListener('input', function() {
+            colorDisplay.textContent = this.value;
+        });
 
-            // --- Get form values ---
-            const name = document.getElementById('wishName').value.trim() || "Friend";
-            const date = document.getElementById('wishDate').value || "";
-            const gender = document.querySelector('input[name="gender"]:checked')?.value || "girl";
-            const photo = document.getElementById('wishPhoto').value.trim() || "./images/unnamed.png";
-            const cardTitle = document.getElementById('wishCardTitle').value.trim() || "Happy Birthday!";
-            const letterText = document.getElementById('wishLetter').value.trim() || "Wishing you a wonderful day!";
-            const themeColor = document.getElementById('wishThemeColor').value || "#FF7882";
-            const music = document.getElementById('wishMusic').value.trim() || "";
-            const targetDate = document.getElementById('wishTargetDate').value || "";
+        // ============================================
+        // AUTH STATE LISTENER
+        // ============================================
+        let currentUser = null;
 
-            // Update color display
-            document.getElementById('colorDisplay').textContent = themeColor;
-
-            const wishData = {
-                name,
-                date,
-                gender,
-                photo,
-                cardTitle,
-                letterText,
-                themeColor,
-                music,
-                targetDate,
-                createdAt: new Date().toISOString()
-            };
-
-            // --- UI Loading ---
-            const btn = document.getElementById('generateBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Saving...';
-            btn.disabled = true;
-
-            let firestoreId = null;
-            let savedToFirebase = false;
-
-            try {
-                // 1. TRY: Save to Firebase Firestore
-                const docRef = await db.collection('wishes').add({
-                    ...wishData,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                firestoreId = docRef.id;
-                savedToFirebase = true;
-                console.log('✅ Wish saved to Firebase! ID:', firestoreId);
-            } catch (firebaseError) {
-                console.error('❌ Firebase Save Error:', firebaseError);
-                savedToFirebase = false;
-                // Continue to localStorage fallback
-            }
-
-            // 2. ALWAYS: Save to localStorage safely (backup + scheduling)
-            const savedLocal = safeSetItem('last_created_wish', wishData);
-
-            // 3. Handle Scheduling (targetDate)
-            if (targetDate) {
-                let scheduledList = [];
-                try {
-                    const raw = localStorage.getItem('scheduled_birthdays');
-                    scheduledList = raw ? JSON.parse(raw) : [];
-                } catch (e) { scheduledList = []; }
-
-                // Avoid duplicates
-                const exists = scheduledList.some(item =>
-                    item.targetDate === targetDate && item.name === name
-                );
-
-                if (!exists) {
-                    const newEntry = {
-                        ...wishData,
-                        targetDate: targetDate,
-                        firestoreId: firestoreId || null
-                    };
-                    scheduledList.push(newEntry);
-
-                    // ⚠️ CRITICAL FIX: Keep only latest 10 to prevent quota issues
-                    if (scheduledList.length > 10) {
-                        scheduledList = scheduledList.slice(-10);
-                    }
-                    safeSetItem('scheduled_birthdays', scheduledList);
-                }
-            }
-
-            // 4. Generate the shareable link
-            let link = '';
-            if (savedToFirebase && firestoreId) {
-                const base = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
-                link = `${base}?id=${firestoreId}`;
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                loginContainer.classList.remove('active');
+                adminContainer.classList.add('active');
+                userEmailDisplay.textContent = user.email;
+                loadWishes(); // Load data from Firebase
             } else {
-                // Fallback: use localStorage preview link
-                const base = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
-                link = `${base} (Saved locally - Firebase unavailable)`;
+                currentUser = null;
+                loginContainer.classList.add('active');
+                adminContainer.classList.remove('active');
+                wishListContainer.innerHTML = '<div class="empty-msg">Please login to manage wishes.</div>';
             }
+        });
 
-            // 5. Display link
-            const linkContainer = document.getElementById('linkContainer');
-            const linkInput = document.getElementById('generatedLink');
-            linkInput.value = link;
-            linkContainer.classList.add('show');
+        // ============================================
+        // LOGIN / SIGNUP
+        // ============================================
+        let isSignupMode = false;
 
-            // 6. Refresh scheduled list
-            renderScheduledList();
-
-            // 7. Final message
-            if (savedToFirebase) {
-                alert(`🎉 Wish saved successfully to Firebase & LocalStorage!\n\nShare this link:\n${link}`);
-            } else {
-                alert(`⚠️ Saved to LocalStorage only (Firebase error).\n\nView at:\n${link}`);
+        loginBtn.addEventListener('click', async () => {
+            const email = loginEmail.value.trim();
+            const pass = loginPassword.value.trim();
+            if (!email || !pass) {
+                loginError.textContent = 'Please enter email and password.';
+                return;
             }
+            loginError.textContent = '';
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Loading...';
 
-            // Reset button
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-
-        // ============================================
-        // COPY LINK TO CLIPBOARD
-        // ============================================
-        function copyLink() {
-            const input = document.getElementById('generatedLink');
-            if (!input.value) return;
-            navigator.clipboard.writeText(input.value).then(() => {
-                alert('✅ Link copied to clipboard!');
-            }).catch(() => {
-                input.select();
-                document.execCommand('copy');
-                alert('✅ Link copied!');
-            });
-        }
-
-        // ============================================
-        // CLEAR ALL STORAGE (Manual fix for quota)
-        // ============================================
-        function clearAllStorage() {
-            if (confirm('⚠️ Are you sure you want to clear ALL localStorage data?\nThis will remove all saved wishes and schedules.')) {
-                localStorage.clear();
-                renderScheduledList();
-                document.getElementById('linkContainer').classList.remove('show');
-                alert('✅ LocalStorage cleared successfully!');
-            }
-        }
-
-        // ============================================
-        // RENDER SCHEDULED BIRTHDAYS LIST
-        // ============================================
-        function renderScheduledList() {
-            const container = document.getElementById('scheduledList');
-            let list = [];
             try {
-                const raw = localStorage.getItem('scheduled_birthdays');
-                list = raw ? JSON.parse(raw) : [];
-            } catch (e) { list = []; }
+                if (isSignupMode) {
+                    await auth.createUserWithEmailAndPassword(email, pass);
+                    loginError.textContent = '✅ Account created! Signed in.';
+                } else {
+                    await auth.signInWithEmailAndPassword(email, pass);
+                }
+            } catch (err) {
+                loginError.textContent = '❌ ' + err.message;
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fa-regular fa-right-to-bracket"></i> Sign In';
+            }
+        });
 
-            if (list.length === 0) {
-                container.innerHTML = '<div class="empty-msg">📭 No scheduled wishes yet.</div>';
+        showSignupBtn.addEventListener('click', () => {
+            isSignupMode = !isSignupMode;
+            showSignupBtn.textContent = isSignupMode ? 'Switch to Login' : 'Create one';
+            loginBtn.innerHTML = isSignupMode ?
+                '<i class="fa-regular fa-user-plus"></i> Create Account' :
+                '<i class="fa-regular fa-right-to-bracket"></i> Sign In';
+        });
+
+        // Enter key support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && loginContainer.classList.contains('active')) {
+                loginBtn.click();
+            }
+        });
+
+        // ============================================
+        // LOGOUT
+        // ============================================
+        function logoutUser() {
+            auth.signOut();
+        }
+
+        // ============================================
+        // CREATE WISH (SAVE TO FIRESTORE)
+        // ============================================
+        async function createWish(e) {
+            e.preventDefault();
+            if (!currentUser) {
+                alert('Please login first.');
                 return;
             }
 
-            let html = '';
-            list.forEach((item, index) => {
-                const dateDisplay = item.targetDate || 'No date';
-                const nameDisplay = item.name || 'Friend';
-                const genderEmoji = item.gender === 'boy' ? '💙' : '💖';
-                html += `
-                    <div class="schedule-item">
-                        <div class="info">
-                            <strong>${nameDisplay}</strong> ${genderEmoji}
-                            <span>📅 ${dateDisplay}</span>
-                            <span class="badge">${item.firestoreId ? '☁️ Synced' : '💾 Local'}</span>
-                        </div>
-                        <button class="delete-sched" onclick="removeScheduled(${index})" title="Remove this schedule">
-                            <i class="fa-regular fa-circle-xmark"></i>
-                        </button>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
+            const data = {
+                name: wishName.value.trim() || "Friend",
+                date: wishDate.value || "",
+                gender: document.querySelector('input[name="gender"]:checked')?.value || "girl",
+                photo: wishPhoto.value.trim() || "./images/unnamed.png",
+                cardTitle: wishCardTitle.value.trim() || "Happy Birthday!",
+                letterText: wishLetter.value.trim() || "Wishing you a wonderful day!",
+                themeColor: wishThemeColor.value || "#FF7882",
+                music: wishMusic.value.trim() || "",
+                targetDate: wishTargetDate.value || "",
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                createdBy: currentUser.uid
+            };
 
-        // ============================================
-        // REMOVE INDIVIDUAL SCHEDULED ITEM
-        // ============================================
-        function removeScheduled(index) {
-            if (!confirm('Remove this scheduled wish?')) return;
-            let list = [];
+            createBtn.disabled = true;
+            createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Saving...';
+
             try {
-                const raw = localStorage.getItem('scheduled_birthdays');
-                list = raw ? JSON.parse(raw) : [];
-            } catch (e) { list = []; }
-
-            if (index >= 0 && index < list.length) {
-                list.splice(index, 1);
-                safeSetItem('scheduled_birthdays', list);
-                renderScheduledList();
+                const docRef = await db.collection('wishes').add(data);
+                console.log('✅ Wish saved to Firebase! ID:', docRef.id);
+                alert('🎉 Wish saved successfully to Firebase!');
+                // Clear form
+                wishName.value = 'Friend';
+                wishDate.value = '';
+                wishTargetDate.value = '';
+                wishLetter.value = 'Wishing you a day filled with love, joy, and lots of cake! 🎂✨';
+                // Refresh list
+                loadWishes();
+            } catch (err) {
+                console.error('❌ Firebase Save Error:', err);
+                alert('❌ Error saving to Firebase: ' + err.message);
+            } finally {
+                createBtn.disabled = false;
+                createBtn.innerHTML = '<i class="fa-regular fa-cloud-upload"></i> Save to Firebase';
             }
         }
 
         // ============================================
-        // COLOR PICKER LIVE PREVIEW
+        // LOAD WISHES FROM FIRESTORE (READ)
         // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            const colorPicker = document.getElementById('wishThemeColor');
-            const colorDisplay = document.getElementById('colorDisplay');
-            if (colorPicker && colorDisplay) {
-                colorPicker.addEventListener('input', function() {
-                    colorDisplay.textContent = this.value;
-                });
-            }
+        async function loadWishes() {
+            wishListContainer.innerHTML = '<div class="empty-msg">Loading wishes...</div>';
+            try {
+                const snapshot = await db.collection('wishes')
+                    .orderBy('createdAt', 'desc')
+                    .get();
 
-            // Load scheduled list on page load
-            renderScheduledList();
-        });
+                if (snapshot.empty) {
+                    wishListContainer.innerHTML = '<div class="empty-msg">📭 No wishes found. Create your first wish!</div>';
+                    return;
+                }
+
+                let html = `
+                    <div class="wish-table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date</th>
+                                    <th>Gender</th>
+                                    <th>Target Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const id = doc.id;
+                    const gender = data.gender || 'girl';
+                    const badgeClass = gender === 'boy' ? 'badge-boy' : 'badge-girl';
+                    const genderLabel = gender === 'boy' ? '👦 Boy' : '👧 Girl';
+                    const targetDisplay = data.targetDate || '—';
+
+                    html += `
+                        <tr class="wish-row">
+                            <td><strong>${data.name || 'Friend'}</strong></td>
+                            <td>${data.date || '—'}</td>
+                            <td><span class="${badgeClass}">${genderLabel}</span></td>
+                            <td>${targetDisplay}</td>
+                            <td>
+                                <div class="actions">
+                                    <a href="index.html?id=${id}" target="_blank" class="btn-sm view">
+                                        <i class="fa-regular fa-eye"></i> View
+                                    </a>
+                                    <button onclick="deleteWish('${id}')" class="btn-sm delete">
+                                        <i class="fa-regular fa-trash-can"></i> Delete
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += `</tbody></table></div>`;
+                wishListContainer.innerHTML = html;
+
+            } catch (err) {
+                console.error('❌ Error loading wishes:', err);
+                wishListContainer.innerHTML = `<div class="empty-msg">❌ Error loading data: ${err.message}</div>`;
+            }
+        }
+
+        // ============================================
+        // DELETE WISH FROM FIRESTORE
+        // ============================================
+        async function deleteWish(id) {
+            if (!confirm('⚠️ Are you sure you want to permanently delete this wish from Firebase?')) return;
+            try {
+                await db.collection('wishes').doc(id).delete();
+                console.log('✅ Wish deleted successfully');
+                loadWishes(); // Refresh list
+                alert('🗑️ Wish deleted successfully!');
+            } catch (err) {
+                console.error('❌ Delete Error:', err);
+                alert('❌ Error deleting: ' + err.message);
+            }
+        }
+
+        // ============================================
+        // INIT - Show login first
+        // ============================================
+        // The auth state listener handles UI visibility.
+        // If user is already signed in, loadWishes() will be called.
+        console.log('🔥 Admin Panel with Firebase Auth + Firestore CRUD loaded.');
     </script>
 
 </body>
