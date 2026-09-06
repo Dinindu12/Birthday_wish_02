@@ -1,1157 +1,711 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Birthday Wish Admin Dashboard 🎂</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎂</text></svg>">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Sriracha&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDK (Compat) - Cloud Firestore -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Panel - Birthday Wishes 🎂</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Sriracha&family=Titan+One&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
+
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <script src="js/firebase-config.js"></script>
 
     <style>
-        :root {
-            --primary: #FF7882;
-            --primary-boy: #1E88E5;
-            --bg-color: #F8F9FA;
-            --card-bg: #FFFFFF;
-            --text-color: #2D3748;
-            --border-radius: 16px;
-        }
+        /* ===== RESET & BASE ===== */
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
         }
         body {
-            background-color: #FFF3F5;
-            color: var(--text-color);
+            font-family: 'Sriracha', cursive;
+            background: #fef6f5;
             min-height: 100vh;
-            padding: 20px 20px 60px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            position: relative;
-        }
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(6px);
-            z-index: 999999;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        .login-card {
-            background: #FFFFFF;
-            width: 100%;
-            max-width: 400px;
-            padding: 35px 30px;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-            text-align: center;
-            border: 2px solid #FFD1D5;
-            animation: modalPop 0.4s ease;
-        }
-        @keyframes modalPop {
-            from { transform: scale(0.85); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .login-card h2 {
-            color: #FF5362;
-            margin-bottom: 8px;
-            font-size: 1.6rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .login-card p {
-            color: #718096;
-            font-size: 0.88rem;
-            margin-bottom: 25px;
-        }
-        .login-field {
-            margin-bottom: 18px;
-            text-align: left;
-        }
-        .login-field label {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #4A5568;
-            margin-bottom: 6px;
-            display: block;
-        }
-        .login-field input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            outline: none;
-            transition: all 0.3s;
-        }
-        .login-field input:focus {
-            border-color: #FF7882;
-            box-shadow: 0 0 0 3px rgba(255, 120, 130, 0.15);
-        }
-        .btn-login {
-            width: 100%;
-            background: linear-gradient(135deg, #FF7882 0%, #FF5362 100%);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(255, 83, 98, 0.35);
-            transition: all 0.3s ease;
-            margin-top: 5px;
-        }
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 83, 98, 0.45);
-        }
-        .login-error {
-            display: none;
-            color: #E53E3E;
-            font-size: 0.85rem;
-            margin-top: 12px;
-            font-weight: 500;
-            background: #FFF5F5;
-            padding: 8px;
-            border-radius: 8px;
-            border: 1px solid #FEB2B2;
+            padding: 30px 20px;
         }
         .admin-container {
             max-width: 900px;
-            width: 100%;
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            padding: 30px;
-            border: 2px solid #FFE4E6;
-            position: relative;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 32px;
+            padding: 40px 45px;
+            box-shadow: 0 20px 60px rgba(255, 120, 130, 0.15);
+            border: 1px solid rgba(255, 120, 130, 0.2);
         }
-        .admin-container.protected-blur {
-            filter: blur(10px);
-            pointer-events: none;
-            user-select: none;
-        }
-        .header {
+        h1 {
+            font-family: 'Titan One', cursive;
+            font-size: 2.8rem;
+            color: #FF7882;
             text-align: center;
+            letter-spacing: 2px;
+            text-shadow: 3px 3px 0 #333;
+            margin-bottom: 8px;
+        }
+        .sub-title {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #666;
             margin-bottom: 30px;
+            border-bottom: 2px dashed #f0d0d0;
             padding-bottom: 15px;
-            border-bottom: 2px dashed #FFD1D5;
-            position: relative;
         }
-        .header h1 {
-            color: #FF5362;
-            font-size: 2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        .sub-title i {
+            color: #FF7882;
         }
-        .header p {
-            color: #718096;
-            font-size: 0.95rem;
-            margin-top: 5px;
-        }
-        .btn-back {
-            position: absolute;
-            left: 0;
-            top: 0;
-            background: #EDF2F7;
-            color: #4A5568;
-            text-decoration: none;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-        .btn-back:hover {
-            background: #FF7882;
-            color: white;
-        }
-        .btn-logout {
-            position: absolute;
-            right: 0;
-            top: 0;
-            background: #EDF2F7;
-            color: #4A5568;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-        .btn-logout:hover {
-            background: #E2E8F0;
-            color: #E53E3E;
-        }
+
+        /* ===== FORM ===== */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .btn-back, .btn-logout {
-                position: static;
-                margin-top: 10px;
-                display: inline-flex;
-            }
+            gap: 18px 30px;
         }
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 4px;
         }
         .form-group.full-width {
             grid-column: 1 / -1;
         }
-        label {
+        .form-group label {
             font-weight: 600;
-            font-size: 0.9rem;
-            color: #4A5568;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        input[type="text"],
-        input[type="password"],
-        input[type="date"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
             font-size: 0.95rem;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        input[type="date"]:focus,
-        textarea:focus,
-        select:focus {
-            border-color: #FF7882;
-            box-shadow: 0 0 0 3px rgba(255, 120, 130, 0.15);
-        }
-        .gender-selector {
-            display: flex;
-            gap: 15px;
-        }
-        .gender-card {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            cursor: pointer;
-            text-align: center;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-        .gender-card.girl-card { color: #FF5362; }
-        .gender-card.boy-card { color: #1E88E5; }
-        input[type="radio"] { display: none; }
-        #gender-girl:checked + .girl-card {
-            border-color: #FF7882;
-            background-color: #FFF0F2;
-            box-shadow: 0 4px 12px rgba(255, 120, 130, 0.2);
-        }
-        #gender-boy:checked + .boy-card {
-            border-color: #1E88E5;
-            background-color: #EBF5FF;
-            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
-        }
-        .photo-preview-box {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .photo-preview {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #FF7882;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .action-section {
-            margin-top: 25px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        .btn-main {
-            background: linear-gradient(135deg, #FF7882 0%, #FF5362 100%);
-            color: white;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(255, 83, 98, 0.35);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-main:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 83, 98, 0.45);
-        }
-        .link-output-box {
-            display: none;
-            background: #F7FAFC;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            padding: 15px;
-            margin-top: 10px;
-        }
-        .link-input-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 8px;
-        }
-        .btn-copy {
-            background: #319795;
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .btn-view {
-            background: #4A5568;
-            color: white;
-            text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 600;
+            color: #444;
             display: flex;
             align-items: center;
             gap: 6px;
         }
-        .scheduled-section {
-            margin-top: 40px;
-            padding-top: 25px;
-            border-top: 2px dashed #FFD1D5;
+        .form-group label i {
+            color: #FF7882;
+            width: 18px;
         }
-        .scheduled-section h2 {
-            font-size: 1.3rem;
-            color: #2D3748;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .scheduled-section .subtitle {
-            font-size: 0.85rem;
-            color: #718096;
-            margin-bottom: 20px;
-        }
-        .birthday-card-item {
-            background: #F8FAFC;
-            border: 2px solid #E2E8F0;
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            padding: 10px 14px;
+            border: 2px solid #eee;
             border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 15px;
+            font-family: 'Sriracha', cursive;
+            font-size: 0.95rem;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #FF7882;
+            outline: none;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 120, 130, 0.15);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            padding-top: 6px;
+        }
+        .radio-group label {
+            font-weight: normal;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            transition: all 0.3s ease;
+            gap: 6px;
+            cursor: pointer;
         }
-        .birthday-card-item:hover {
-            border-color: #FF7882;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        .radio-group input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #FF7882;
         }
-        .birthday-card-left {
+        .color-picker-wrapper {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-        .birthday-card-avatar {
+        .color-picker-wrapper input[type="color"] {
             width: 50px;
             height: 50px;
+            padding: 2px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #FF7882;
-        }
-        .birthday-card-info h4 {
-            font-size: 1rem;
-            color: #2D3748;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .badge-gender {
-            font-size: 0.75rem;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-weight: 600;
-        }
-        .badge-girl { background: #FFF0F2; color: #FF5362; }
-        .badge-boy { background: #EBF5FF; color: #1E88E5; }
-        .status-badge {
-            font-size: 0.78rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .status-active { background: #C6F6D5; color: #22543D; }
-        .status-upcoming { background: #FEFCBF; color: #744210; }
-        .status-expired { background: #FED7D7; color: #742A2A; }
-        .birthday-card-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 0.8rem;
-            border-radius: 8px;
-            border: none;
+            border: 3px solid #ddd;
             cursor: pointer;
-            font-weight: 600;
+            background: none;
+        }
+
+        /* ===== BUTTONS ===== */
+        .btn-row {
             display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 14px 40px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Sriracha', cursive;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
             align-items: center;
-            gap: 4px;
-            text-decoration: none;
+            gap: 10px;
+            border: 3px solid #333;
         }
-        .btn-sm-copy { background: #319795; color: white; }
-        .btn-sm-view { background: #4A5568; color: white; }
-        .btn-sm-delete { background: #E53E3E; color: white; }
-        .firebase-box {
-            background: #EDF2F7;
-            border: 2px solid #CBD5E0;
-            border-radius: 14px;
-            padding: 18px;
-            margin-bottom: 25px;
+        .btn-primary {
+            background: #FF7882;
+            color: #fff;
+            box-shadow: 0 6px 0 #333;
         }
-        .firebase-box h3 {
-            font-size: 1rem;
-            color: #2D3748;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #333;
+        }
+        .btn-primary:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #333;
+        }
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+            box-shadow: 0 6px 0 #999;
+        }
+        .btn-secondary:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: #ff4444;
+            color: #fff;
+            box-shadow: 0 6px 0 #aa2222;
+        }
+        .btn-danger:hover {
+            background: #ee3333;
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            opacity: 0.6;
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #333;
+            cursor: not-allowed;
+        }
+
+        /* ===== GENERATED LINK ===== */
+        .link-container {
+            margin-top: 25px;
+            padding: 20px;
+            background: #f0f7ff;
+            border-radius: 20px;
+            border: 2px dashed #FF7882;
+            display: none;
+        }
+        .link-container.show {
+            display: block;
+        }
+        .link-container label {
+            font-weight: 600;
+            display: block;
             margin-bottom: 6px;
+        }
+        .link-container .link-box {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .link-container input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ccc;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            background: #fff;
+            font-family: 'Sriracha', cursive;
+        }
+        .link-container .copy-btn {
+            background: #333;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Sriracha', cursive;
+            transition: 0.3s;
+        }
+        .link-container .copy-btn:hover {
+            background: #FF7882;
+        }
+
+        /* ===== SCHEDULED LIST ===== */
+        .scheduled-section {
+            margin-top: 35px;
+            border-top: 2px solid #f0e0e0;
+            padding-top: 25px;
+        }
+        .scheduled-section h3 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2rem;
+            color: #FF7882;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
-        .firebase-box p {
-            font-size: 0.83rem;
-            color: #4A5568;
-            margin-bottom: 12px;
+        .schedule-item {
+            background: #fafafa;
+            padding: 12px 18px;
+            border-radius: 14px;
+            border-left: 6px solid #FF7882;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
-        .admin-footer {
-            margin-top: 30px;
+        .schedule-item .info {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .schedule-item .info strong {
+            color: #333;
+        }
+        .schedule-item .badge {
+            background: #FF7882;
+            color: #fff;
+            padding: 2px 14px;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            border: 2px solid #333;
+        }
+        .schedule-item .delete-sched {
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: 0.3s;
+            background: none;
+            border: none;
+        }
+        .schedule-item .delete-sched:hover {
+            transform: scale(1.2);
+        }
+        .empty-msg {
+            color: #999;
+            font-style: italic;
             text-align: center;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #718096;
+            padding: 20px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 700px) {
+            .admin-container {
+                padding: 20px 16px;
+            }
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .btn-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn {
+                justify-content: center;
+            }
+            .link-container .link-box {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
-
 <body>
 
-    <!-- Admin Authentication Overlay -->
-    <div id="login-overlay">
-        <div class="login-card">
-            <h2><i class="fa-solid fa-lock"></i> Admin Access</h2>
-            <p>Please enter admin credentials to access configurator.</p>
-            <form onsubmit="event.preventDefault(); attemptLogin();">
-                <div class="login-field">
-                    <label for="login-username"><i class="fa-solid fa-user-shield"></i> Username</label>
-                    <input type="text" id="login-username" placeholder="Enter Admin Username" required autocomplete="username">
-                </div>
-                <div class="login-field">
-                    <label for="login-password"><i class="fa-solid fa-key"></i> Password</label>
-                    <input type="password" id="login-password" placeholder="Enter Admin Password" required autocomplete="current-password">
-                </div>
-                <div id="login-error" class="login-error">
-                    <i class="fa-solid fa-triangle-exclamation"></i> Invalid Username or Password!
-                </div>
-                <button type="submit" class="btn-login">
-                    <i class="fa-solid fa-right-to-bracket"></i> Login to Admin Panel
-                </button>
-            </form>
-        </div>
-    </div>
+    <div class="admin-container">
+        <h1>🎂 Admin Panel</h1>
+        <p class="sub-title"><i class="fa-regular fa-pen-to-square"></i> Create &amp; Schedule Birthday Wishes</p>
 
-    <!-- Admin Dashboard Container -->
-    <div class="admin-container protected-blur" id="admin-container">
-        <div class="header">
-            <a href="index.html" class="btn-back">
-                <i class="fa-solid fa-arrow-left"></i> View Birthday Page
-            </a>
-            <button class="btn-logout" onclick="logoutAdmin()">
-                <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
-            <h1><i class="fa-solid fa-cake-candles"></i> Birthday Wish Configurator</h1>
-            <p>Customize Girl (Pink) & Boy (Blue) themes, dynamic names, dates, photos & wishes!</p>
-        </div>
-
-        <!-- Firebase Cloud Firestore Status Box -->
-        <div class="firebase-box">
-            <h3><i class="fa-solid fa-fire" style="color: #FF6D00;"></i> Cloud Firestore (Connected & Active 🔥)</h3>
-            <p>Your Cloud Firestore database is connected! All wishes are saved globally with Firestore document IDs.</p>
-        </div>
-
-        <form id="wish-form" onsubmit="event.preventDefault(); generateLink();">
+        <!-- ===== FORM ===== -->
+        <form id="wishForm" onsubmit="generateLink(event)">
             <div class="form-grid">
-                
-                <!-- Gender Selection -->
-                <div class="form-group full-width">
-                    <label><i class="fa-solid fa-venus-mars"></i> Select Theme / Gender</label>
-                    <div class="gender-selector">
-                        <input type="radio" id="gender-girl" name="gender" value="girl" checked onchange="updateThemePreview('girl')">
-                        <label for="gender-girl" class="gender-card girl-card">
-                            <i class="fa-solid fa-venus"></i> Girl Theme (Pink 🌸)
-                        </label>
-                        <input type="radio" id="gender-boy" name="gender" value="boy" onchange="updateThemePreview('boy')">
-                        <label for="gender-boy" class="gender-card boy-card">
-                            <i class="fa-solid fa-mars"></i> Boy Theme (Blue 💙)
-                        </label>
+
+                <!-- Name -->
+                <div class="form-group">
+                    <label><i class="fa-regular fa-user"></i> Name</label>
+                    <input type="text" id="wishName" placeholder="e.g. Dinindu" value="Friend" />
+                </div>
+
+                <!-- Date of Birth -->
+                <div class="form-group">
+                    <label><i class="fa-regular fa-calendar"></i> Date of Birth</label>
+                    <input type="date" id="wishDate" />
+                </div>
+
+                <!-- Gender -->
+                <div class="form-group">
+                    <label><i class="fa-regular fa-face-smile"></i> Gender</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="gender" value="girl" checked /> 👧 Girl</label>
+                        <label><input type="radio" name="gender" value="boy" /> 👦 Boy</label>
                     </div>
                 </div>
 
-                <!-- Recipient Name -->
+                <!-- Photo URL -->
                 <div class="form-group">
-                    <label for="recipient_name"><i class="fa-solid fa-user"></i> Recipient Name</label>
-                    <input type="text" id="recipient_name" placeholder="e.g. Mehwish / Kasun" required value="Mehwish">
+                    <label><i class="fa-regular fa-image"></i> Photo URL</label>
+                    <input type="text" id="wishPhoto" placeholder="./images/unnamed.png" value="./images/unnamed.png" />
                 </div>
 
-                <!-- Birthday Label Text -->
+                <!-- Card Title -->
                 <div class="form-group">
-                    <label for="birthday_date"><i class="fa-solid fa-tag"></i> Birthday Label Text</label>
-                    <input type="text" id="birthday_date" placeholder="e.g. 27 May / Oct 15" required value="27 May">
-                </div>
-
-                <!-- Schedule Target Date -->
-                <div class="form-group">
-                    <label for="schedule_target_date"><i class="fa-solid fa-calendar-day"></i> Schedule Birthday Date (Target Date)</label>
-                    <input type="date" id="schedule_target_date" required>
+                    <label><i class="fa-regular fa-rectangle-ad"></i> Card Title</label>
+                    <input type="text" id="wishCardTitle" placeholder="Happy Birthday!" value="Happy Birthday!" />
                 </div>
 
                 <!-- Theme Color -->
                 <div class="form-group">
-                    <label for="theme_color"><i class="fa-solid fa-palette"></i> Custom Color Accent</label>
-                    <input type="color" id="theme_color" value="#FF7882" style="height: 48px; cursor: pointer;">
-                </div>
-
-                <!-- Profile Photo -->
-                <div class="form-group full-width">
-                    <label><i class="fa-solid fa-image"></i> Profile Photo (URL or File Upload)</label>
-                    <div class="photo-preview-box">
-                        <img id="photo-preview" class="photo-preview" src="./images/unnamed.png" alt="Preview">
-                        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
-                            <input type="text" id="photo_url" placeholder="Paste Image URL here (Recommended)..." oninput="previewImage(this.value)">
-                            <input type="file" id="photo_file" accept="image/*" onchange="handleFileUpload(event)">
-                        </div>
+                    <label><i class="fa-regular fa-palette"></i> Theme Color</label>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="wishThemeColor" value="#FF7882" />
+                        <span id="colorDisplay" style="font-size:0.9rem;">#FF7882</span>
                     </div>
                 </div>
 
-                <!-- Envelope Title -->
+                <!-- Music URL -->
                 <div class="form-group full-width">
-                    <label for="card_title"><i class="fa-solid fa-envelope"></i> Envelope Title</label>
-                    <input type="text" id="card_title" placeholder="e.g. To You! / Happy Birthday Champ" value="To You!">
-                </div>
-
-                <!-- MP3 Music -->
-                <div class="form-group full-width">
-                    <label for="music_url"><i class="fa-solid fa-music"></i> Birthday Song / MP3 Music</label>
-                    <div style="display: flex; gap: 10px;">
-                        <input type="text" id="music_url" placeholder="Paste MP3 Music URL or choose preset below..." style="flex: 1;" value="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3">
-                        <input type="file" id="music_file" accept="audio/*" style="display:none;" onchange="handleAudioUpload(event)">
-                        <button type="button" class="btn-copy" style="background:#805AD5;" onclick="document.getElementById('music_file').click()">
-                            <i class="fa-solid fa-upload"></i> Upload MP3
-                        </button>
-                    </div>
-                    <div style="margin-top: 6px; font-size: 0.82rem; color: #718096;">
-                        <strong>Or Select Preset Birthday Tune:</strong>
-                        <select id="preset_music" onchange="if(this.value) document.getElementById('music_url').value = this.value;" style="margin-top: 4px;">
-                            <option value="">-- Choose Preset Track --</option>
-                            <option value="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" selected>🎵 Festive Happy Birthday Tune</option>
-                            <option value="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a89f92.mp3">🎶 Gentle Piano Birthday Melody</option>
-                            <option value="https://cdn.pixabay.com/download/audio/2021/08/09/audio_8233215a77.mp3">🎉 Upbeat Celebration Party Beat</option>
-                        </select>
-                    </div>
+                    <label><i class="fa-regular fa-music"></i> Background Music URL</label>
+                    <input type="text" id="wishMusic" placeholder="https://...mp3" value="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" />
                 </div>
 
                 <!-- Wish Letter -->
                 <div class="form-group full-width">
-                    <label for="letter_text"><i class="fa-solid fa-envelope-open-text"></i> Birthday Wish Letter Message</label>
-                    <textarea id="letter_text" rows="4" placeholder="Write your heartfelt birthday wish here..." required>Happy birthday 🥳🎂🥳 the day you came into my life I was not really attached to you, but day by day you became so close to my heart. I wish you all the happiness, joy, and success in the world! May all your dreams come true! 🎈🎂🎈 Don't be sad, always stay happy and keep smiling! 😌✨</textarea>
+                    <label><i class="fa-regular fa-envelope"></i> Wish Letter</label>
+                    <textarea id="wishLetter" placeholder="Write your heartfelt birthday message here...">Wishing you a day filled with love, joy, and lots of cake! 🎂✨</textarea>
+                </div>
+
+                <!-- Target Date (Scheduling) -->
+                <div class="form-group full-width">
+                    <label><i class="fa-regular fa-clock"></i> Schedule for Date (Optional)</label>
+                    <input type="date" id="wishTargetDate" />
+                    <small style="color:#888;">Leave empty to create an unscheduled wish.</small>
                 </div>
 
             </div>
 
-            <div class="action-section">
-                <button type="submit" class="btn-main" id="btn-generate">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Save Birthday & Generate Share Link
+            <div class="btn-row">
+                <button type="submit" class="btn btn-primary" id="generateBtn">
+                    <i class="fa-regular fa-link"></i> Generate Link
                 </button>
-
-                <div class="link-output-box" id="link-output">
-                    <label style="color: #2B6CB0;"><i class="fa-solid fa-link"></i> Shareable Birthday Wish Link:</label>
-                    <div class="link-input-group">
-                        <input type="text" id="generated-url" readonly>
-                        <button type="button" class="btn-copy" onclick="copyGeneratedLink()">
-                            <i class="fa-solid fa-copy"></i> Copy Link
-                        </button>
-                        <a id="btn-open-preview" href="#" target="_blank" class="btn-view">
-                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Wish
-                        </a>
-                    </div>
-                </div>
+                <button type="button" class="btn btn-danger" onclick="clearAllStorage()">
+                    <i class="fa-regular fa-trash-can"></i> Clear Storage
+                </button>
             </div>
         </form>
 
-        <!-- Scheduled & Added Birthdays List -->
-        <div class="scheduled-section">
-            <h2><i class="fa-solid fa-calendar-check"></i> Added & Scheduled Birthdays List</h2>
-            <p class="subtitle">
-                Birthdays automatically display on their scheduled date and auto-delete 24 hours after their birthday!
-            </p>
-            <div id="scheduled-list-container">
-                <!-- Dynamically rendered by JS -->
+        <!-- ===== GENERATED LINK OUTPUT ===== -->
+        <div class="link-container" id="linkContainer">
+            <label><i class="fa-regular fa-link"></i> Your Shareable Link:</label>
+            <div class="link-box">
+                <input type="text" id="generatedLink" readonly />
+                <button class="copy-btn" onclick="copyLink()"><i class="fa-regular fa-copy"></i> Copy</button>
             </div>
+        </div>
+
+        <!-- ===== SCHEDULED BIRTHDAYS LIST ===== -->
+        <div class="scheduled-section">
+            <h3><i class="fa-regular fa-calendar-check"></i> Scheduled Wishes</h3>
+            <div id="scheduledList"></div>
         </div>
     </div>
 
-    <footer class="admin-footer">
-        Developed with ❤️ by Dinindu Jayampathi
-    </footer>
-
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT - FULL FIX (QuotaExceededError HANDLED)            -->
+    <!-- ============================================================ -->
     <script>
-        // Admin Credentials
-        const ADMIN_USER = "admin";
-        const ADMIN_PASS = "admin123";
+        // ============================================
+        // FIREBASE CONFIG (Your provided config)
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyBD1DyGnvlNoDRwumUsnHKsU1TbBo-39fs",
+            authDomain: "birthday-wishes-3f440.firebaseapp.com",
+            projectId: "birthday-wishes-3f440",
+            storageBucket: "birthday-wishes-3f440.firebasestorage.app",
+            messagingSenderId: "196544487511",
+            appId: "1:196544487511:web:6604014975e99a7ec9c312"
+        };
 
-        // ============================================================
-        // 1. AUTHENTICATION
-        // ============================================================
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            const todayStr = new Date().toISOString().split('T')[0];
-            document.getElementById('schedule_target_date').value = todayStr;
-            renderScheduledBirthdays();
-        });
-
-        function checkAuth() {
-            const isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
-            const overlay = document.getElementById('login-overlay');
-            const container = document.getElementById('admin-container');
-            if (isAuth) {
-                overlay.style.display = 'none';
-                container.classList.remove('protected-blur');
-            } else {
-                overlay.style.display = 'flex';
-                container.classList.add('protected-blur');
-            }
+        // Init Firebase
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
+        const db = firebase.firestore();
 
-        function attemptLogin() {
-            const userIn = document.getElementById('login-username').value.trim();
-            const passIn = document.getElementById('login-password').value.trim();
-            const errorBox = document.getElementById('login-error');
-            if (userIn === ADMIN_USER && passIn === ADMIN_PASS) {
-                sessionStorage.setItem('admin_authenticated', 'true');
-                errorBox.style.display = 'none';
-                checkAuth();
-            } else {
-                errorBox.style.display = 'block';
-            }
-        }
-
-        function logoutAdmin() {
-            sessionStorage.removeItem('admin_authenticated');
-            checkAuth();
-        }
-
-        // ============================================================
-        // 2. UI HELPERS (Theme Preview, Image Upload, Audio Upload)
-        // ============================================================
-        function updateThemePreview(gender) {
-            const colorPicker = document.getElementById('theme_color');
-            const previewImg = document.getElementById('photo-preview');
-            if (gender === 'boy') {
-                colorPicker.value = '#1E88E5';
-                previewImg.style.borderColor = '#1E88E5';
-            } else {
-                colorPicker.value = '#FF7882';
-                previewImg.style.borderColor = '#FF7882';
-            }
-        }
-
-        function previewImage(url) {
-            if (url && url.trim() !== "") {
-                document.getElementById('photo-preview').src = url;
-            }
-        }
-
-        // 🔥 IMAGE UPLOAD WITH COMPRESSION (Max 300px, Quality 0.6)
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Max dimension 300px (sufficient for profile photo, keeps size small)
-                    const maxDim = 300;
-                    let width = img.width;
-                    let height = img.height;
-                    
-                    if (width > height) {
-                        if (width > maxDim) {
-                            height = Math.round(height * (maxDim / width));
-                            width = maxDim;
-                        }
-                    } else {
-                        if (height > maxDim) {
-                            width = Math.round(width * (maxDim / height));
-                            height = maxDim;
-                        }
-                    }
-
-                    canvas.width = width;
-                    canvas.height = height;
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    // JPEG quality 0.6 (60%) – good balance between size and quality
-                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-                    
-                    document.getElementById('photo-preview').src = compressedDataUrl;
-                    document.getElementById('photo_url').value = compressedDataUrl;
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // MP3 Audio file upload
-        function handleAudioUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('music_url').value = e.target.result;
-                    alert("🎵 MP3 Audio file loaded successfully!");
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // ============================================================
-        // 3. LOCAL STORAGE HELPERS
-        // ============================================================
-        function getScheduledList() {
-            const raw = localStorage.getItem('scheduled_birthdays');
-            if (!raw) return [];
+        // ============================================
+        // SAFE LOCALSTORAGE SETTER (FIXES QUOTA ERROR)
+        // ============================================
+        function safeSetItem(key, value) {
             try {
-                const list = JSON.parse(raw);
-                const now = new Date();
-                const activeList = list.filter(item => {
-                    if (!item.targetDate) return true;
-                    const targetEnd = new Date(item.targetDate + "T23:59:59");
-                    const hoursPast = (now - targetEnd) / (1000 * 60 * 60);
-                    return hoursPast <= 24;
-                });
-                if (activeList.length !== list.length) {
-                    localStorage.setItem('scheduled_birthdays', JSON.stringify(activeList));
-                }
-                return activeList;
+                localStorage.setItem(key, JSON.stringify(value));
+                return true;
             } catch (e) {
-                return [];
-            }
-        }
+                if (e.name === 'QuotaExceededError') {
+                    console.warn('⚠️ Storage quota exceeded for key:', key);
 
-        // ============================================================
-        // 4. FIRESTORE REST API HELPERS
-        // ============================================================
-        function getFirestoreBaseUrl() {
-            const config = window.firebaseAppConfig;
-            if (!config || !config.projectId) return null;
-            return `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents`;
-        }
-
-        function encodeFirestoreFields(obj) {
-            const fields = {};
-            for (const [key, val] of Object.entries(obj)) {
-                if (typeof val === 'string') {
-                    fields[key] = { stringValue: val };
-                } else if (typeof val === 'number') {
-                    fields[key] = { integerValue: val };
-                } else if (typeof val === 'boolean') {
-                    fields[key] = { booleanValue: val };
-                } else if (val instanceof Date) {
-                    fields[key] = { timestampValue: val.toISOString() };
-                } else if (Array.isArray(val)) {
-                    fields[key] = { arrayValue: { values: val.map(v => ({ stringValue: String(v) })) } };
-                } else if (val === null || val === undefined) {
-                    fields[key] = { nullValue: null };
-                } else {
-                    fields[key] = { stringValue: String(val) };
-                }
-            }
-            return fields;
-        }
-
-        function decodeFirestoreFields(fields) {
-            const obj = {};
-            for (const [key, val] of Object.entries(fields)) {
-                if (val.stringValue !== undefined) obj[key] = val.stringValue;
-                else if (val.integerValue !== undefined) obj[key] = Number(val.integerValue);
-                else if (val.booleanValue !== undefined) obj[key] = val.booleanValue;
-                else if (val.timestampValue !== undefined) obj[key] = val.timestampValue;
-                else if (val.nullValue !== undefined) obj[key] = null;
-                else obj[key] = val;
-            }
-            return obj;
-        }
-
-        // Save wish to Cloud Firestore via REST API
-        async function saveWishToFirestore(wishObj) {
-            const baseUrl = getFirestoreBaseUrl();
-            if (!baseUrl) return null;
-
-            try {
-                const endpoint = `${baseUrl}/wishes`;
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fields: encodeFirestoreFields(wishObj) })
-                });
-                if (response.ok) {
-                    const json = await response.json();
-                    if (json && json.name) {
-                        return json.name.split('/').pop();
-                    }
-                } else {
-                    console.warn("Firestore REST POST failed:", response.status);
-                }
-            } catch (e) {
-                console.warn("Firestore REST save error:", e);
-            }
-            return null;
-        }
-
-        // Fetch all wishes from Firestore via REST API
-        async function fetchFirestoreWishes() {
-            const baseUrl = getFirestoreBaseUrl();
-            if (!baseUrl) return {};
-
-            try {
-                const endpoint = `${baseUrl}/wishes`;
-                const response = await fetch(endpoint);
-                if (response.ok) {
-                    const json = await response.json();
-                    const result = {};
-                    if (json.documents) {
-                        for (const doc of json.documents) {
-                            const docId = doc.name.split('/').pop();
-                            if (doc.fields) {
-                                const data = decodeFirestoreFields(doc.fields);
-                                data.fbKey = docId;
-                                data.id = docId;
-                                result[docId] = data;
+                    // Auto-cleanup strategy: remove oldest scheduled items
+                    try {
+                        const raw = localStorage.getItem('scheduled_birthdays');
+                        if (raw) {
+                            const list = JSON.parse(raw);
+                            if (Array.isArray(list) && list.length > 3) {
+                                // Keep only latest 3 to free space
+                                const trimmed = list.slice(-3);
+                                localStorage.setItem('scheduled_birthdays', JSON.stringify(trimmed));
+                                // Try saving again
+                                localStorage.setItem(key, JSON.stringify(value));
+                                return true;
                             }
                         }
+                        // If that fails, clear everything
+                        localStorage.clear();
+                        localStorage.setItem(key, JSON.stringify(value));
+                        return true;
+                    } catch (finalErr) {
+                        alert('⚠️ ඔබගේ බ්‍රවුසරයේ ගබඩාව සම්පූර්ණයෙන්ම පිරී ඇත.\nකරුණාකර "Clear Storage" බොත්තම ඔබා නැවත උත්සාහ කරන්න.');
+                        return false;
                     }
-                    return result;
                 }
-            } catch (e) {
-                console.warn("Firestore REST fetch error:", e);
-            }
-            return {};
-        }
-
-        async function deleteFirestoreDocument(docId) {
-            const baseUrl = getFirestoreBaseUrl();
-            if (!baseUrl || !docId) return false;
-            try {
-                const endpoint = `${baseUrl}/wishes/${encodeURIComponent(docId)}`;
-                const response = await fetch(endpoint, { method: 'DELETE' });
-                return response.ok;
-            } catch (e) {
-                console.warn("Firestore REST delete error:", e);
+                console.error('Unexpected localStorage error:', e);
                 return false;
             }
         }
 
-        // ============================================================
-        // 5. BUILD SHAREABLE URL (with fallbacks)
-        // ============================================================
-        async function buildSafeWishUrl(wishObj) {
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
+        // ============================================
+        // GENERATE LINK (MAIN FUNCTION)
+        // ============================================
+        async function generateLink(event) {
+            event.preventDefault();
 
-            // 1. Primary: Save to Cloud Firestore via REST API
-            const docId = await saveWishToFirestore(wishObj);
-            if (docId) {
-                return `${baseUrl}?id=${encodeURIComponent(docId)}`;
-            }
+            // --- Get form values ---
+            const name = document.getElementById('wishName').value.trim() || "Friend";
+            const date = document.getElementById('wishDate').value || "";
+            const gender = document.querySelector('input[name="gender"]:checked')?.value || "girl";
+            const photo = document.getElementById('wishPhoto').value.trim() || "./images/unnamed.png";
+            const cardTitle = document.getElementById('wishCardTitle').value.trim() || "Happy Birthday!";
+            const letterText = document.getElementById('wishLetter').value.trim() || "Wishing you a wonderful day!";
+            const themeColor = document.getElementById('wishThemeColor').value || "#FF7882";
+            const music = document.getElementById('wishMusic').value.trim() || "";
+            const targetDate = document.getElementById('wishTargetDate').value || "";
 
-            // 2. Fallback: Firebase SDK
-            if (window.firebase && window.firebaseAppConfig) {
-                try {
-                    if (!firebase.apps.length) {
-                        firebase.initializeApp(window.firebaseAppConfig);
-                    }
-                    const db = firebase.firestore();
-                    const docRef = await db.collection('wishes').add(wishObj);
-                    return `${baseUrl}?id=${docRef.id}`;
-                } catch (e) {
-                    console.warn("Firestore SDK fallback error:", e);
-                }
-            }
+            // Update color display
+            document.getElementById('colorDisplay').textContent = themeColor;
 
-            // 3. Base64 URL fallback (trim large images to avoid URI too long)
-            const safeObj = { ...wishObj };
-            if (safeObj.photo && safeObj.photo.startsWith('data:image') && safeObj.photo.length > 2500) {
-                safeObj.photo = "./images/unnamed.png";
-            }
-            const jsonString = JSON.stringify(safeObj);
-            const encoded = btoa(encodeURIComponent(jsonString));
-            return `${baseUrl}?data=${encoded}`;
-        }
-
-        // ============================================================
-        // 6. RENDER SCHEDULED BIRTHDAYS LIST
-        // ============================================================
-        async function renderScheduledBirthdays() {
-            const container = document.getElementById('scheduled-list-container');
-            container.innerHTML = `
-                <div style="text-align: center; padding: 25px; color: #718096;">
-                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: #FF7882;"></i>
-                    <p style="margin-top: 8px; font-weight: 500;">Syncing birthdays from Cloud Firestore...</p>
-                </div>
-            `;
-
-            // Get data from both Firestore and LocalStorage
-            const localList = getScheduledList();
-            const fbData = await fetchFirestoreWishes();
-
-            const combinedMap = new Map();
-
-            // Process Firestore items
-            if (fbData && typeof fbData === 'object') {
-                Object.keys(fbData).forEach(key => {
-                    const item = fbData[key];
-                    if (item && typeof item === 'object') {
-                        combinedMap.set(key, {
-                            ...item,
-                            fbKey: key,
-                            id: key
-                        });
-                    }
-                });
-            }
-
-            // Process LocalStorage items (backup)
-            localList.forEach(item => {
-                const key = item.fbKey || item.id || item.name;
-                if (!combinedMap.has(key)) {
-                    combinedMap.set(key, item);
-                }
-            });
-
-            const combinedList = Array.from(combinedMap.values());
-
-            if (combinedList.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 25px; background: #F8FAFC; border-radius: 12px; border: 2px dashed #CBD5E0; color: #A0AEC0;">
-                        <i class="fa-solid fa-calendar-plus" style="font-size: 2rem; margin-bottom: 8px;"></i>
-                        <p style="font-weight: 500;">No scheduled birthdays added yet. Use the form above to add a birthday!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const todayStr = new Date().toISOString().split('T')[0];
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
-            let html = '';
-
-            for (const item of combinedList) {
-                const isGirl = item.gender === 'girl';
-                const genderBadge = isGirl ?
-                    `<span class="badge-gender badge-girl"><i class="fa-solid fa-venus"></i> Girl</span>` :
-                    `<span class="badge-gender badge-boy"><i class="fa-solid fa-mars"></i> Boy</span>`;
-                
-                let statusBadge = '';
-                if (item.targetDate === todayStr) {
-                    statusBadge = `<span class="status-badge status-active"><i class="fa-solid fa-cake-candles"></i> Active Today</span>`;
-                } else if (item.targetDate > todayStr) {
-                    statusBadge = `<span class="status-badge status-upcoming"><i class="fa-solid fa-clock"></i> Upcoming (${item.targetDate})</span>`;
-                } else {
-                    statusBadge = `<span class="status-badge status-expired"><i class="fa-solid fa-hourglass-end"></i> Auto-Deleting Soon (24h)</span>`;
-                }
-
-                const docId = item.fbKey || item.id;
-                const wishUrl = docId ? `${baseUrl}?id=${encodeURIComponent(docId)}` : await buildSafeWishUrl(item);
-
-                html += `
-                    <div class="birthday-card-item">
-                        <div class="birthday-card-left">
-                            <img src="${item.photo || './images/unnamed.png'}" class="birthday-card-avatar" alt="Avatar" onerror="this.src='./images/unnamed.png'">
-                            <div class="birthday-card-info">
-                                <h4>${item.name || 'Birthday Wish'} ${genderBadge} ${statusBadge}</h4>
-                                <p style="font-size: 0.8rem; color: #718096; margin-top: 2px;">
-                                    <i class="fa-solid fa-calendar-day"></i> Target Date: <strong>${item.targetDate || 'Today'}</strong> (${item.date || 'No Label'})
-                                </p>
-                            </div>
-                        </div>
-                        <div class="birthday-card-actions">
-                            <button class="btn-sm btn-sm-copy" data-url="${encodeURI(wishUrl)}" onclick="handleCopyClick(this)">
-                                <i class="fa-solid fa-copy"></i> Copy Link
-                            </button>
-                            <a href="${wishUrl}" target="_blank" class="btn-sm btn-sm-view">
-                                <i class="fa-solid fa-eye"></i> View
-                            </a>
-                            <button class="btn-sm btn-sm-delete" data-id="${docId || ''}" onclick="handleDeleteClick(this)">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = html;
-        }
-
-        // ============================================================
-        // 7. COPY & DELETE HANDLERS
-        // ============================================================
-        function handleCopyClick(btn) {
-            const rawUrl = btn.getAttribute('data-url');
-            if (rawUrl) {
-                const cleanUrl = decodeURI(rawUrl);
-                navigator.clipboard.writeText(cleanUrl);
-                alert("✨ Birthday Wish Link copied to clipboard!");
-            }
-        }
-
-        async function handleDeleteClick(btn) {
-            const docId = btn.getAttribute('data-id');
-            if (!docId) {
-                alert("Cannot delete: missing document ID.");
-                return;
-            }
-            if (!confirm("Are you sure you want to permanently delete this birthday wish from Cloud Firestore?")) return;
-
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
-
-            // Delete from Firestore
-            await deleteFirestoreDocument(docId);
-            
-            // Also remove from localStorage
-            let list = getScheduledList();
-            list = list.filter(item => item.id != docId && item.fbKey != docId);
-            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
-            localStorage.removeItem('last_created_wish');
-
-            await new Promise(r => setTimeout(r, 300));
-            await renderScheduledBirthdays();
-        }
-
-        // ============================================================
-        // 8. GENERATE LINK (SAVE WISH)
-        // ============================================================
-        async function generateLink() {
-            const gender = document.querySelector('input[name="gender"]:checked').value;
-            const name = document.getElementById('recipient_name').value.trim();
-            const date = document.getElementById('birthday_date').value.trim();
-            const targetDate = document.getElementById('schedule_target_date').value;
-            const photo = document.getElementById('photo_url').value.trim() || document.getElementById('photo-preview').src;
-            const cardTitle = document.getElementById('card_title').value.trim();
-            const themeColor = document.getElementById('theme_color').value;
-            const music = document.getElementById('music_url').value.trim() || "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
-            const letterText = document.getElementById('letter_text').value.trim();
-
-            // ---------- 🔥 FIX: Separate objects for Firestore and LocalStorage ----------
-            // 1. Full object for Firestore (keeps original image)
-            const wishObj = {
-                id: Date.now(),
+            const wishData = {
                 name,
                 date,
-                targetDate,
                 gender,
-                photo, // Original Base64 (compressed via handleFileUpload)
+                photo,
                 cardTitle,
+                letterText,
                 themeColor,
                 music,
-                letterText,
+                targetDate,
                 createdAt: new Date().toISOString()
             };
 
-            // 2. Lightweight object for LocalStorage (replace large image with default)
-            const storageObj = { ...wishObj };
-            if (storageObj.photo && storageObj.photo.startsWith('data:image') && storageObj.photo.length > 2000) {
-                storageObj.photo = "./images/unnamed.png";
+            // --- UI Loading ---
+            const btn = document.getElementById('generateBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+
+            let firestoreId = null;
+            let savedToFirebase = false;
+
+            try {
+                // 1. TRY: Save to Firebase Firestore
+                const docRef = await db.collection('wishes').add({
+                    ...wishData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                firestoreId = docRef.id;
+                savedToFirebase = true;
+                console.log('✅ Wish saved to Firebase! ID:', firestoreId);
+            } catch (firebaseError) {
+                console.error('❌ Firebase Save Error:', firebaseError);
+                savedToFirebase = false;
+                // Continue to localStorage fallback
             }
-            // ---------- END FIX ----------
 
-            // Save to LocalStorage (lightweight version)
-            let list = getScheduledList();
-            list.push(storageObj);
-            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
-            localStorage.setItem('last_created_wish', JSON.stringify(storageObj));
+            // 2. ALWAYS: Save to localStorage safely (backup + scheduling)
+            const savedLocal = safeSetItem('last_created_wish', wishData);
 
-            // Save to Firestore (full version with image)
-            const shareableUrl = await buildSafeWishUrl(wishObj);
+            // 3. Handle Scheduling (targetDate)
+            if (targetDate) {
+                let scheduledList = [];
+                try {
+                    const raw = localStorage.getItem('scheduled_birthdays');
+                    scheduledList = raw ? JSON.parse(raw) : [];
+                } catch (e) { scheduledList = []; }
 
-            // Re-render list
-            await renderScheduledBirthdays();
+                // Avoid duplicates
+                const exists = scheduledList.some(item =>
+                    item.targetDate === targetDate && item.name === name
+                );
 
-            const urlInput = document.getElementById('generated-url');
-            urlInput.value = shareableUrl;
-            document.getElementById('btn-open-preview').href = shareableUrl;
-            document.getElementById('link-output').style.display = 'block';
+                if (!exists) {
+                    const newEntry = {
+                        ...wishData,
+                        targetDate: targetDate,
+                        firestoreId: firestoreId || null
+                    };
+                    scheduledList.push(newEntry);
+
+                    // ⚠️ CRITICAL FIX: Keep only latest 10 to prevent quota issues
+                    if (scheduledList.length > 10) {
+                        scheduledList = scheduledList.slice(-10);
+                    }
+                    safeSetItem('scheduled_birthdays', scheduledList);
+                }
+            }
+
+            // 4. Generate the shareable link
+            let link = '';
+            if (savedToFirebase && firestoreId) {
+                const base = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+                link = `${base}?id=${firestoreId}`;
+            } else {
+                // Fallback: use localStorage preview link
+                const base = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+                link = `${base} (Saved locally - Firebase unavailable)`;
+            }
+
+            // 5. Display link
+            const linkContainer = document.getElementById('linkContainer');
+            const linkInput = document.getElementById('generatedLink');
+            linkInput.value = link;
+            linkContainer.classList.add('show');
+
+            // 6. Refresh scheduled list
+            renderScheduledList();
+
+            // 7. Final message
+            if (savedToFirebase) {
+                alert(`🎉 Wish saved successfully to Firebase & LocalStorage!\n\nShare this link:\n${link}`);
+            } else {
+                alert(`⚠️ Saved to LocalStorage only (Firebase error).\n\nView at:\n${link}`);
+            }
+
+            // Reset button
+            btn.innerHTML = originalText;
+            btn.disabled = false;
         }
 
-        function copyGeneratedLink() {
-            const urlInput = document.getElementById('generated-url');
-            urlInput.select();
-            urlInput.setSelectionRange(0, 99999);
-            navigator.clipboard.writeText(urlInput.value);
-            alert("✨ Birthday Wish Link copied to clipboard!");
+        // ============================================
+        // COPY LINK TO CLIPBOARD
+        // ============================================
+        function copyLink() {
+            const input = document.getElementById('generatedLink');
+            if (!input.value) return;
+            navigator.clipboard.writeText(input.value).then(() => {
+                alert('✅ Link copied to clipboard!');
+            }).catch(() => {
+                input.select();
+                document.execCommand('copy');
+                alert('✅ Link copied!');
+            });
         }
+
+        // ============================================
+        // CLEAR ALL STORAGE (Manual fix for quota)
+        // ============================================
+        function clearAllStorage() {
+            if (confirm('⚠️ Are you sure you want to clear ALL localStorage data?\nThis will remove all saved wishes and schedules.')) {
+                localStorage.clear();
+                renderScheduledList();
+                document.getElementById('linkContainer').classList.remove('show');
+                alert('✅ LocalStorage cleared successfully!');
+            }
+        }
+
+        // ============================================
+        // RENDER SCHEDULED BIRTHDAYS LIST
+        // ============================================
+        function renderScheduledList() {
+            const container = document.getElementById('scheduledList');
+            let list = [];
+            try {
+                const raw = localStorage.getItem('scheduled_birthdays');
+                list = raw ? JSON.parse(raw) : [];
+            } catch (e) { list = []; }
+
+            if (list.length === 0) {
+                container.innerHTML = '<div class="empty-msg">📭 No scheduled wishes yet.</div>';
+                return;
+            }
+
+            let html = '';
+            list.forEach((item, index) => {
+                const dateDisplay = item.targetDate || 'No date';
+                const nameDisplay = item.name || 'Friend';
+                const genderEmoji = item.gender === 'boy' ? '💙' : '💖';
+                html += `
+                    <div class="schedule-item">
+                        <div class="info">
+                            <strong>${nameDisplay}</strong> ${genderEmoji}
+                            <span>📅 ${dateDisplay}</span>
+                            <span class="badge">${item.firestoreId ? '☁️ Synced' : '💾 Local'}</span>
+                        </div>
+                        <button class="delete-sched" onclick="removeScheduled(${index})" title="Remove this schedule">
+                            <i class="fa-regular fa-circle-xmark"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // REMOVE INDIVIDUAL SCHEDULED ITEM
+        // ============================================
+        function removeScheduled(index) {
+            if (!confirm('Remove this scheduled wish?')) return;
+            let list = [];
+            try {
+                const raw = localStorage.getItem('scheduled_birthdays');
+                list = raw ? JSON.parse(raw) : [];
+            } catch (e) { list = []; }
+
+            if (index >= 0 && index < list.length) {
+                list.splice(index, 1);
+                safeSetItem('scheduled_birthdays', list);
+                renderScheduledList();
+            }
+        }
+
+        // ============================================
+        // COLOR PICKER LIVE PREVIEW
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const colorPicker = document.getElementById('wishThemeColor');
+            const colorDisplay = document.getElementById('colorDisplay');
+            if (colorPicker && colorDisplay) {
+                colorPicker.addEventListener('input', function() {
+                    colorDisplay.textContent = this.value;
+                });
+            }
+
+            // Load scheduled list on page load
+            renderScheduledList();
+        });
     </script>
+
 </body>
 </html>
