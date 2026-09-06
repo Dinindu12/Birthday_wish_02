@@ -17,6 +17,20 @@ const DEFAULT_WISH_DATA = {
 
 let wishData = { ...DEFAULT_WISH_DATA };
 
+// ===== SAFE LOCALSTORAGE SETTER (QuotaExceededError protection) =====
+function safeSetItem(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+        if (e.name === 'QuotaExceededError') {
+            alert('⚠️ ඔබගේ බ්‍රවුසරයේ ගබඩාව පිරී ඇත. කරුණාකර පැරණි දත්ත මකා දමන්න (F12 -> Application -> Clear Storage).');
+            console.warn('Storage quota exceeded for key:', key);
+        } else {
+            console.error('Unexpected error while saving to localStorage:', e);
+        }
+    }
+}
+
 // Helper: decode URL safe Base64 string
 function decodeWishData(encodedStr) {
     try {
@@ -40,7 +54,7 @@ function getFirestore() {
     return firebase.firestore();
 }
 
-// Helper: Get active scheduled birthdays from localStorage
+// Helper: Get active scheduled birthdays from localStorage (with safe set)
 function getActiveScheduledBirthdays() {
     const raw = localStorage.getItem('scheduled_birthdays');
     if (!raw) return [];
@@ -54,7 +68,8 @@ function getActiveScheduledBirthdays() {
             return hoursPast <= 24;
         });
         if (activeList.length !== list.length) {
-            localStorage.setItem('scheduled_birthdays', JSON.stringify(activeList));
+            // Use safeSetItem instead of direct setItem
+            safeSetItem('scheduled_birthdays', activeList);
         }
         return activeList;
     } catch (e) {
