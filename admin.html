@@ -659,6 +659,9 @@
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
+        // ============================================================
+        // 1. AUTHENTICATION
+        // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
             const todayStr = new Date().toISOString().split('T')[0];
@@ -697,6 +700,9 @@
             checkAuth();
         }
 
+        // ============================================================
+        // 2. UI HELPERS (Theme Preview, Image Upload, Audio Upload)
+        // ============================================================
         function updateThemePreview(gender) {
             const colorPicker = document.getElementById('theme_color');
             const previewImg = document.getElementById('photo-preview');
@@ -715,35 +721,66 @@
             }
         }
 
+        // 🔥 IMAGE UPLOAD WITH COMPRESSION (Max 300px, Quality 0.6)
         function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Max dimension 300px (sufficient for profile photo, keeps size small)
+                    const maxDim = 300;
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round(height * (maxDim / width));
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round(width * (maxDim / height));
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // JPEG quality 0.6 (60%) – good balance between size and quality
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                    
+                    document.getElementById('photo-preview').src = compressedDataUrl;
+                    document.getElementById('photo_url').value = compressedDataUrl;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // MP3 Audio file upload
+        function handleAudioUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const maxDim = 600;
-                        let width = img.width, height = img.height;
-                        if (width > height) {
-                            if (width > maxDim) { height *= maxDim / width; width = maxDim; }
-                        } else {
-                            if (height > maxDim) { width *= maxDim / height; height = maxDim; }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
-                        document.getElementById('photo-preview').src = compressedDataUrl;
-                        document.getElementById('photo_url').value = compressedDataUrl;
-                    };
-                    img.src = e.target.result;
+                    document.getElementById('music_url').value = e.target.result;
+                    alert("🎵 MP3 Audio file loaded successfully!");
                 };
                 reader.readAsDataURL(file);
             }
         }
 
+        // ============================================================
+        // 3. LOCAL STORAGE HELPERS
+        // ============================================================
         function getScheduledList() {
             const raw = localStorage.getItem('scheduled_birthdays');
             if (!raw) return [];
@@ -765,43 +802,15 @@
             }
         }
 
-        // ---------------- Cloud Firestore REST API Helpers ----------------
-
+        // ============================================================
+        // 4. FIRESTORE REST API HELPERS
+        // ============================================================
         function getFirestoreBaseUrl() {
             const config = window.firebaseAppConfig;
             if (!config || !config.projectId) return null;
             return `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents`;
         }
 
-        // Save wish to Cloud Firestore via REST API (auto-generates document ID)
-        async function saveWishToFirestore(wishObj) {
-            const baseUrl = getFirestoreBaseUrl();
-            if (!baseUrl) return null;
-
-            try {
-                const endpoint = `${baseUrl}/wishes`;
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ fields: encodeFirestoreFields(wishObj) })
-                });
-                if (response.ok) {
-                    const json = await response.json();
-                    // json.name contains the document ID
-                    if (json && json.name) {
-                        const docId = json.name.split('/').pop();
-                        return docId;
-                    }
-                } else {
-                    console.warn("Firestore REST POST failed:", response.status);
-                }
-            } catch (e) {
-                console.warn("Firestore REST save error:", e);
-            }
-            return null;
-        }
-
-        // Encode JS object to Firestore Field format
         function encodeFirestoreFields(obj) {
             const fields = {};
             for (const [key, val] of Object.entries(obj)) {
@@ -824,7 +833,6 @@
             return fields;
         }
 
-        // Decode Firestore Field format to JS object
         function decodeFirestoreFields(fields) {
             const obj = {};
             for (const [key, val] of Object.entries(fields)) {
@@ -836,6 +844,32 @@
                 else obj[key] = val;
             }
             return obj;
+        }
+
+        // Save wish to Cloud Firestore via REST API
+        async function saveWishToFirestore(wishObj) {
+            const baseUrl = getFirestoreBaseUrl();
+            if (!baseUrl) return null;
+
+            try {
+                const endpoint = `${baseUrl}/wishes`;
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fields: encodeFirestoreFields(wishObj) })
+                });
+                if (response.ok) {
+                    const json = await response.json();
+                    if (json && json.name) {
+                        return json.name.split('/').pop();
+                    }
+                } else {
+                    console.warn("Firestore REST POST failed:", response.status);
+                }
+            } catch (e) {
+                console.warn("Firestore REST save error:", e);
+            }
+            return null;
         }
 
         // Fetch all wishes from Firestore via REST API
@@ -861,8 +895,6 @@
                         }
                     }
                     return result;
-                } else {
-                    console.warn("Firestore REST list failed:", response.status);
                 }
             } catch (e) {
                 console.warn("Firestore REST fetch error:", e);
@@ -870,7 +902,6 @@
             return {};
         }
 
-        // Delete a Firestore document via REST API
         async function deleteFirestoreDocument(docId) {
             const baseUrl = getFirestoreBaseUrl();
             if (!baseUrl || !docId) return false;
@@ -884,8 +915,9 @@
             }
         }
 
-        // ---------------- Build Shareable URL ----------------
-
+        // ============================================================
+        // 5. BUILD SHAREABLE URL (with fallbacks)
+        // ============================================================
         async function buildSafeWishUrl(wishObj) {
             const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
 
@@ -909,7 +941,7 @@
                 }
             }
 
-            // 3. Base64 URL fallback (trim large images)
+            // 3. Base64 URL fallback (trim large images to avoid URI too long)
             const safeObj = { ...wishObj };
             if (safeObj.photo && safeObj.photo.startsWith('data:image') && safeObj.photo.length > 2500) {
                 safeObj.photo = "./images/unnamed.png";
@@ -919,8 +951,9 @@
             return `${baseUrl}?data=${encoded}`;
         }
 
-        // ---------------- Render Scheduled List ----------------
-
+        // ============================================================
+        // 6. RENDER SCHEDULED BIRTHDAYS LIST
+        // ============================================================
         async function renderScheduledBirthdays() {
             const container = document.getElementById('scheduled-list-container');
             container.innerHTML = `
@@ -930,6 +963,7 @@
                 </div>
             `;
 
+            // Get data from both Firestore and LocalStorage
             const localList = getScheduledList();
             const fbData = await fetchFirestoreWishes();
 
@@ -949,7 +983,7 @@
                 });
             }
 
-            // Process LocalStorage items (for backward compatibility)
+            // Process LocalStorage items (backup)
             localList.forEach(item => {
                 const key = item.fbKey || item.id || item.name;
                 if (!combinedMap.has(key)) {
@@ -994,7 +1028,7 @@
                 html += `
                     <div class="birthday-card-item">
                         <div class="birthday-card-left">
-                            <img src="${item.photo || './images/unnamed.png'}" class="birthday-card-avatar" alt="Avatar">
+                            <img src="${item.photo || './images/unnamed.png'}" class="birthday-card-avatar" alt="Avatar" onerror="this.src='./images/unnamed.png'">
                             <div class="birthday-card-info">
                                 <h4>${item.name || 'Birthday Wish'} ${genderBadge} ${statusBadge}</h4>
                                 <p style="font-size: 0.8rem; color: #718096; margin-top: 2px;">
@@ -1020,6 +1054,9 @@
             container.innerHTML = html;
         }
 
+        // ============================================================
+        // 7. COPY & DELETE HANDLERS
+        // ============================================================
         function handleCopyClick(btn) {
             const rawUrl = btn.getAttribute('data-url');
             if (rawUrl) {
@@ -1041,7 +1078,7 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
             // Delete from Firestore
-            const deleted = await deleteFirestoreDocument(docId);
+            await deleteFirestoreDocument(docId);
             
             // Also remove from localStorage
             let list = getScheduledList();
@@ -1053,20 +1090,9 @@
             await renderScheduledBirthdays();
         }
 
-        // MP3 Audio file upload
-        function handleAudioUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('music_url').value = e.target.result;
-                    alert("🎵 MP3 Audio file loaded successfully!");
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Generate & Save Wish
+        // ============================================================
+        // 8. GENERATE LINK (SAVE WISH)
+        // ============================================================
         async function generateLink() {
             const gender = document.querySelector('input[name="gender"]:checked').value;
             const name = document.getElementById('recipient_name').value.trim();
@@ -1078,13 +1104,15 @@
             const music = document.getElementById('music_url').value.trim() || "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
             const letterText = document.getElementById('letter_text').value.trim();
 
+            // ---------- 🔥 FIX: Separate objects for Firestore and LocalStorage ----------
+            // 1. Full object for Firestore (keeps original image)
             const wishObj = {
                 id: Date.now(),
                 name,
                 date,
                 targetDate,
                 gender,
-                photo,
+                photo, // Original Base64 (compressed via handleFileUpload)
                 cardTitle,
                 themeColor,
                 music,
@@ -1092,13 +1120,20 @@
                 createdAt: new Date().toISOString()
             };
 
-            // Save to localStorage as backup
-            let list = getScheduledList();
-            list.push(wishObj);
-            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
-            localStorage.setItem('last_created_wish', JSON.stringify(wishObj));
+            // 2. Lightweight object for LocalStorage (replace large image with default)
+            const storageObj = { ...wishObj };
+            if (storageObj.photo && storageObj.photo.startsWith('data:image') && storageObj.photo.length > 2000) {
+                storageObj.photo = "./images/unnamed.png";
+            }
+            // ---------- END FIX ----------
 
-            // Generate shareable URL (saves to Firestore)
+            // Save to LocalStorage (lightweight version)
+            let list = getScheduledList();
+            list.push(storageObj);
+            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
+            localStorage.setItem('last_created_wish', JSON.stringify(storageObj));
+
+            // Save to Firestore (full version with image)
             const shareableUrl = await buildSafeWishUrl(wishObj);
 
             // Re-render list
