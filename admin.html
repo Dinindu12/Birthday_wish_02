@@ -11,10 +11,12 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Sriracha&family=Titan+One&family=Dancing+Script:wght@700&display=swap" rel="stylesheet" />
 
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (Storage එකත් එක්ක) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <!-- ⭐ Firebase Storage SDK එක මෙතනින් Add කරන්න -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
     <style>
         /* ===== RESET & BASE ===== */
@@ -30,7 +32,7 @@
             padding: 20px;
         }
 
-        /* ===== BACK TO PAGE BUTTON (Top Left) ===== */
+        /* ===== BACK TO PAGE BUTTON ===== */
         .back-btn {
             position: fixed;
             top: 18px;
@@ -55,9 +57,6 @@
             background: #333;
             color: #fff;
             transform: translateY(-2px);
-        }
-        .back-btn i {
-            font-size: 1.1rem;
         }
 
         /* ===== LOGIN CONTAINER ===== */
@@ -281,6 +280,58 @@
             background: none;
         }
 
+        /* ===== FILE UPLOAD STYLES ===== */
+        .file-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .file-upload-wrapper input[type="file"] {
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 14px;
+            background: #fafafa;
+            cursor: pointer;
+            font-family: 'Sriracha', cursive;
+        }
+        .file-upload-wrapper input[type="file"]:hover {
+            border-color: #FF7882;
+        }
+        .file-upload-wrapper .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .file-upload-wrapper .file-preview img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid #eee;
+        }
+        .file-upload-wrapper .file-preview .file-name {
+            font-size: 0.85rem;
+            color: #555;
+        }
+        .upload-progress {
+            width: 100%;
+            height: 6px;
+            background: #eee;
+            border-radius: 10px;
+            margin-top: 4px;
+            overflow: hidden;
+            display: none;
+        }
+        .upload-progress .bar {
+            height: 100%;
+            background: #FF7882;
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
         .btn-row {
             display: flex;
             gap: 15px;
@@ -501,14 +552,20 @@
         <!-- ===== CREATE WISH FORM ===== -->
         <form id="wishForm" onsubmit="createWish(event)">
             <div class="form-grid">
+
+                <!-- Name -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-user"></i> Name</label>
                     <input type="text" id="wishName" placeholder="e.g. Dinindu" value="Friend" required />
                 </div>
+
+                <!-- Date -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-calendar"></i> Date of Birth</label>
                     <input type="date" id="wishDate" />
                 </div>
+
+                <!-- Gender -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-face-smile"></i> Gender</label>
                     <div class="radio-group">
@@ -516,14 +573,14 @@
                         <label><input type="radio" name="gender" value="boy" /> 👦 Boy</label>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label><i class="fa-regular fa-image"></i> Photo URL</label>
-                    <input type="text" id="wishPhoto" placeholder="./images/unnamed.png" value="./images/unnamed.png" />
-                </div>
+
+                <!-- Card Title -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-rectangle-ad"></i> Card Title</label>
                     <input type="text" id="wishCardTitle" placeholder="Happy Birthday!" value="Happy Birthday!" />
                 </div>
+
+                <!-- Theme Color -->
                 <div class="form-group">
                     <label><i class="fa-regular fa-palette"></i> Theme Color</label>
                     <div class="color-picker-wrapper">
@@ -531,20 +588,56 @@
                         <span id="colorDisplay" style="font-size:0.9rem;">#FF7882</span>
                     </div>
                 </div>
-                <div class="form-group full-width">
-                    <label><i class="fa-regular fa-music"></i> Background Music URL</label>
-                    <input type="text" id="wishMusic" placeholder="https://...mp3" value="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" />
+
+                <!-- Target Date -->
+                <div class="form-group">
+                    <label><i class="fa-regular fa-clock"></i> Schedule Date</label>
+                    <input type="date" id="wishTargetDate" />
+                    <small style="color:#888;">Leave empty for immediate wish.</small>
                 </div>
+
+                <!-- ⭐ IMAGE UPLOAD (File) -->
+                <div class="form-group full-width">
+                    <label><i class="fa-regular fa-image"></i> Upload Photo (Image)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="wishPhotoFile" accept="image/*" />
+                        <div class="file-preview" id="photoPreviewContainer">
+                            <img id="photoPreview" style="display:none;" />
+                            <span class="file-name" id="photoFileName">No file selected</span>
+                        </div>
+                        <div class="upload-progress" id="photoProgress">
+                            <div class="bar" id="photoProgressBar"></div>
+                        </div>
+                        <small style="color:#888;">Or paste URL below (optional)</small>
+                        <input type="text" id="wishPhotoUrl" placeholder="https://... (or leave empty to use uploaded file)" />
+                    </div>
+                </div>
+
+                <!-- ⭐ MUSIC UPLOAD (File) -->
+                <div class="form-group full-width">
+                    <label><i class="fa-regular fa-music"></i> Upload Music (MP3)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="wishMusicFile" accept="audio/*" />
+                        <div class="file-preview" id="musicPreviewContainer">
+                            <span class="file-name" id="musicFileName">No file selected</span>
+                            <audio id="musicPreview" controls style="display:none; width:200px;"></audio>
+                        </div>
+                        <div class="upload-progress" id="musicProgress">
+                            <div class="bar" id="musicProgressBar"></div>
+                        </div>
+                        <small style="color:#888;">Or paste URL below (optional)</small>
+                        <input type="text" id="wishMusicUrl" placeholder="https://... (or leave empty to use uploaded file)" />
+                    </div>
+                </div>
+
+                <!-- Wish Letter -->
                 <div class="form-group full-width">
                     <label><i class="fa-regular fa-envelope"></i> Wish Letter</label>
                     <textarea id="wishLetter" placeholder="Write your heartfelt birthday message here...">Wishing you a day filled with love, joy, and lots of cake! 🎂✨</textarea>
                 </div>
-                <div class="form-group full-width">
-                    <label><i class="fa-regular fa-clock"></i> Schedule for Date (Optional)</label>
-                    <input type="date" id="wishTargetDate" />
-                    <small style="color:#888;">Leave empty for immediate wish.</small>
-                </div>
+
             </div>
+
             <div class="btn-row">
                 <button type="submit" class="btn btn-primary" id="createBtn">
                     <i class="fa-regular fa-cloud-upload"></i> Save to Firebase
@@ -562,7 +655,7 @@
     </div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT - FIREBASE AUTH + CRUD (FULL FIREBASE FIRST)      -->
+    <!-- JAVASCRIPT - AUTH + STORAGE + FIRESTORE (FULL ONLINE)        -->
     <!-- ============================================================ -->
     <script>
         // ============================================
@@ -583,6 +676,7 @@
         }
         const db = firebase.firestore();
         const auth = firebase.auth();
+        const storage = firebase.storage(); // ⭐ Storage Reference
 
         // ============================================
         // DOM REFS
@@ -600,17 +694,65 @@
         // Form fields
         const wishName = document.getElementById('wishName');
         const wishDate = document.getElementById('wishDate');
-        const wishPhoto = document.getElementById('wishPhoto');
         const wishCardTitle = document.getElementById('wishCardTitle');
         const wishLetter = document.getElementById('wishLetter');
         const wishThemeColor = document.getElementById('wishThemeColor');
-        const wishMusic = document.getElementById('wishMusic');
         const wishTargetDate = document.getElementById('wishTargetDate');
         const colorDisplay = document.getElementById('colorDisplay');
         const createBtn = document.getElementById('createBtn');
 
+        // File inputs & previews
+        const photoFileInput = document.getElementById('wishPhotoFile');
+        const photoUrlInput = document.getElementById('wishPhotoUrl');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoFileName = document.getElementById('photoFileName');
+        const photoProgress = document.getElementById('photoProgress');
+        const photoProgressBar = document.getElementById('photoProgressBar');
+
+        const musicFileInput = document.getElementById('wishMusicFile');
+        const musicUrlInput = document.getElementById('wishMusicUrl');
+        const musicFileName = document.getElementById('musicFileName');
+        const musicPreview = document.getElementById('musicPreview');
+        const musicProgress = document.getElementById('musicProgress');
+        const musicProgressBar = document.getElementById('musicProgressBar');
+
         // ============================================
-        // COLOR PICKER LIVE UPDATE
+        // FILE INPUT PREVIEWS
+        // ============================================
+        photoFileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                photoFileName.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    photoPreview.src = event.target.result;
+                    photoPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                photoFileName.textContent = 'No file selected';
+                photoPreview.style.display = 'none';
+            }
+        });
+
+        musicFileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                musicFileName.textContent = file.name;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    musicPreview.src = event.target.result;
+                    musicPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                musicFileName.textContent = 'No file selected';
+                musicPreview.style.display = 'none';
+            }
+        });
+
+        // ============================================
+        // COLOR PICKER
         // ============================================
         wishThemeColor.addEventListener('input', function() {
             colorDisplay.textContent = this.value;
@@ -627,7 +769,7 @@
                 loginContainer.classList.remove('active');
                 adminContainer.classList.add('active');
                 userEmailDisplay.textContent = user.email;
-                loadWishes(); // Load data from Firebase
+                loadWishes();
             } else {
                 currentUser = null;
                 loginContainer.classList.add('active');
@@ -675,7 +817,6 @@
                 '<i class="fa-regular fa-right-to-bracket"></i> Sign In';
         });
 
-        // Enter key support
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && loginContainer.classList.contains('active')) {
                 loginBtn.click();
@@ -690,7 +831,45 @@
         }
 
         // ============================================
-        // CREATE WISH (SAVE TO FIRESTORE)
+        // UPLOAD FILE TO FIREBASE STORAGE
+        // ============================================
+        function uploadFileToStorage(file, path, progressBarElement) {
+            return new Promise((resolve, reject) => {
+                const storageRef = storage.ref(path);
+                const uploadTask = storageRef.put(file);
+
+                // Show progress
+                if (progressBarElement) {
+                    progressBarElement.parentElement.style.display = 'block';
+                }
+
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        if (progressBarElement) {
+                            progressBarElement.style.width = progress + '%';
+                        }
+                    },
+                    (error) => {
+                        reject(error);
+                    },
+                    async () => {
+                        const downloadURL = await storageRef.getDownloadURL();
+                        if (progressBarElement) {
+                            progressBarElement.style.width = '100%';
+                            setTimeout(() => {
+                                progressBarElement.parentElement.style.display = 'none';
+                                progressBarElement.style.width = '0%';
+                            }, 1000);
+                        }
+                        resolve(downloadURL);
+                    }
+                );
+            });
+        }
+
+        // ============================================
+        // CREATE WISH (WITH FILE UPLOADS)
         // ============================================
         async function createWish(e) {
             e.preventDefault();
@@ -699,45 +878,101 @@
                 return;
             }
 
-            const data = {
-                name: wishName.value.trim() || "Friend",
-                date: wishDate.value || "",
-                gender: document.querySelector('input[name="gender"]:checked')?.value || "girl",
-                photo: wishPhoto.value.trim() || "./images/unnamed.png",
-                cardTitle: wishCardTitle.value.trim() || "Happy Birthday!",
-                letterText: wishLetter.value.trim() || "Wishing you a wonderful day!",
-                themeColor: wishThemeColor.value || "#FF7882",
-                music: wishMusic.value.trim() || "",
-                targetDate: wishTargetDate.value || "",
-                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                createdBy: currentUser.uid
-            };
-
+            // Disable button
             createBtn.disabled = true;
-            createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Saving...';
+            createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Uploading files...';
 
             try {
+                let photoURL = photoUrlInput.value.trim();
+                let musicURL = musicUrlInput.value.trim();
+
+                // --- Upload Photo if file selected ---
+                const photoFile = photoFileInput.files[0];
+                if (photoFile && !photoURL) {
+                    const ext = photoFile.name.split('.').pop();
+                    const path = `wishes/${currentUser.uid}/${Date.now()}_photo.${ext}`;
+                    createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Uploading Photo...';
+                    photoURL = await uploadFileToStorage(photoFile, path, photoProgressBar);
+                } else if (photoFile && photoURL) {
+                    // If both file and URL, prioritize file, but we'll use URL since file is selected but URL has priority? Better to use file.
+                    // Let's upload the file anyway.
+                    const ext = photoFile.name.split('.').pop();
+                    const path = `wishes/${currentUser.uid}/${Date.now()}_photo.${ext}`;
+                    createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Uploading Photo...';
+                    photoURL = await uploadFileToStorage(photoFile, path, photoProgressBar);
+                }
+
+                // --- Upload Music if file selected ---
+                const musicFile = musicFileInput.files[0];
+                if (musicFile && !musicURL) {
+                    const ext = musicFile.name.split('.').pop();
+                    const path = `wishes/${currentUser.uid}/${Date.now()}_music.${ext}`;
+                    createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Uploading Music...';
+                    musicURL = await uploadFileToStorage(musicFile, path, musicProgressBar);
+                } else if (musicFile && musicURL) {
+                    const ext = musicFile.name.split('.').pop();
+                    const path = `wishes/${currentUser.uid}/${Date.now()}_music.${ext}`;
+                    createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Uploading Music...';
+                    musicURL = await uploadFileToStorage(musicFile, path, musicProgressBar);
+                }
+
+                // --- Fallback defaults if no URL provided ---
+                if (!photoURL) photoURL = "./images/unnamed.png";
+                if (!musicURL) musicURL = "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
+
+                // --- Save to Firestore ---
+                createBtn.innerHTML = '<i class="fa-regular fa-spinner fa-spin"></i> Saving to Database...';
+
+                const data = {
+                    name: wishName.value.trim() || "Friend",
+                    date: wishDate.value || "",
+                    gender: document.querySelector('input[name="gender"]:checked')?.value || "girl",
+                    photo: photoURL,
+                    music: musicURL,
+                    cardTitle: wishCardTitle.value.trim() || "Happy Birthday!",
+                    letterText: wishLetter.value.trim() || "Wishing you a wonderful day!",
+                    themeColor: wishThemeColor.value || "#FF7882",
+                    targetDate: wishTargetDate.value || "",
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdBy: currentUser.uid
+                };
+
                 const docRef = await db.collection('wishes').add(data);
                 console.log('✅ Wish saved to Firebase! ID:', docRef.id);
-                alert('🎉 Wish saved successfully to Firebase!');
-                // Clear form
+                alert('🎉 Wish saved successfully to Firebase with uploaded files!');
+
+                // Reset form (keep name only for convenience)
                 wishName.value = 'Friend';
                 wishDate.value = '';
                 wishTargetDate.value = '';
                 wishLetter.value = 'Wishing you a day filled with love, joy, and lots of cake! 🎂✨';
-                // Refresh list
+                photoFileInput.value = '';
+                photoPreview.style.display = 'none';
+                photoFileName.textContent = 'No file selected';
+                photoUrlInput.value = '';
+                musicFileInput.value = '';
+                musicPreview.style.display = 'none';
+                musicFileName.textContent = 'No file selected';
+                musicUrlInput.value = '';
+
                 loadWishes();
+
             } catch (err) {
-                console.error('❌ Firebase Save Error:', err);
-                alert('❌ Error saving to Firebase: ' + err.message);
+                console.error('❌ Error:', err);
+                alert('❌ Error: ' + err.message);
             } finally {
                 createBtn.disabled = false;
                 createBtn.innerHTML = '<i class="fa-regular fa-cloud-upload"></i> Save to Firebase';
+                // Hide progress bars
+                photoProgress.style.display = 'none';
+                musicProgress.style.display = 'none';
+                photoProgressBar.style.width = '0%';
+                musicProgressBar.style.width = '0%';
             }
         }
 
         // ============================================
-        // LOAD WISHES FROM FIRESTORE (READ)
+        // LOAD WISHES FROM FIRESTORE
         // ============================================
         async function loadWishes() {
             wishListContainer.innerHTML = '<div class="empty-msg">Loading wishes...</div>';
@@ -760,6 +995,7 @@
                                     <th>Date</th>
                                     <th>Gender</th>
                                     <th>Target Date</th>
+                                    <th>Media</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -773,6 +1009,8 @@
                     const badgeClass = gender === 'boy' ? 'badge-boy' : 'badge-girl';
                     const genderLabel = gender === 'boy' ? '👦 Boy' : '👧 Girl';
                     const targetDisplay = data.targetDate || '—';
+                    const hasPhoto = data.photo && data.photo !== './images/unnamed.png' ? '🖼️' : '—';
+                    const hasMusic = data.music && data.music.includes('http') ? '🎵' : '—';
 
                     html += `
                         <tr class="wish-row">
@@ -780,6 +1018,7 @@
                             <td>${data.date || '—'}</td>
                             <td><span class="${badgeClass}">${genderLabel}</span></td>
                             <td>${targetDisplay}</td>
+                            <td>${hasPhoto} ${hasMusic}</td>
                             <td>
                                 <div class="actions">
                                     <a href="index.html?id=${id}" target="_blank" class="btn-sm view">
@@ -804,14 +1043,15 @@
         }
 
         // ============================================
-        // DELETE WISH FROM FIRESTORE
+        // DELETE WISH (and optionally storage files)
         // ============================================
         async function deleteWish(id) {
             if (!confirm('⚠️ Are you sure you want to permanently delete this wish from Firebase?')) return;
             try {
+                // Optional: Delete files from Storage too? (We'll just delete Firestore doc for now to keep it simple)
                 await db.collection('wishes').doc(id).delete();
                 console.log('✅ Wish deleted successfully');
-                loadWishes(); // Refresh list
+                loadWishes();
                 alert('🗑️ Wish deleted successfully!');
             } catch (err) {
                 console.error('❌ Delete Error:', err);
@@ -820,11 +1060,10 @@
         }
 
         // ============================================
-        // INIT - Show login first
+        // INIT
         // ============================================
-        // The auth state listener handles UI visibility.
-        // If user is already signed in, loadWishes() will be called.
-        console.log('🔥 Admin Panel with Firebase Auth + Firestore CRUD loaded.');
+        console.log('🔥 Admin Panel with Firebase Auth + Storage + Firestore loaded.');
+        console.log('📸 You can now upload Images and MP3 files!');
     </script>
 
 </body>
