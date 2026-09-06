@@ -1,5 +1,6 @@
 /**
  * Birthday Wish Web Application - Dynamic Renderer & Controller (Cloud Firestore Edition)
+ * FIXED: Mobile/Vercel name display & Audio "no supported sources" error
  */
 
 // Neutral Empty Fallback Wish Data
@@ -12,7 +13,8 @@ const DEFAULT_WISH_DATA = {
     cardSubTitle: "",
     letterText: "No active birthday wish found for today. Use the Admin Panel to create or schedule a new wish!",
     themeColor: "#FF7882",
-    music: "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"
+    // 🔥 FIX: Use a reliable public MP3 URL as default
+    music: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
 };
 
 let wishData = { ...DEFAULT_WISH_DATA };
@@ -68,7 +70,6 @@ function getActiveScheduledBirthdays() {
             return hoursPast <= 24;
         });
         if (activeList.length !== list.length) {
-            // Use safeSetItem instead of direct setItem
             safeSetItem('scheduled_birthdays', activeList);
         }
         return activeList;
@@ -83,7 +84,7 @@ async function loadWishData() {
     const encodedData = urlParams.get('data');
     const wishId = urlParams.get('id');
 
-    // 1. Direct Base64 Data URL Mode
+    // 1. Direct Base64 Data URL Mode (highest priority)
     if (encodedData) {
         const parsed = decodeWishData(encodedData);
         if (parsed) {
@@ -108,7 +109,35 @@ async function loadWishData() {
                     console.log("No such Firestore document!");
                 }
             } catch (err) {
+                // 🔥 FIX: If Firestore fails (permissions), fallback to localStorage immediately
                 console.warn("Firestore fetch error:", err);
+                // Try to load from localStorage as a fallback
+                const localSaved = localStorage.getItem('last_created_wish');
+                if (localSaved) {
+                    try {
+                        const parsedLocal = JSON.parse(localSaved);
+                        wishData = { ...DEFAULT_WISH_DATA, ...parsedLocal };
+                        console.log("✅ Loaded wish data from localStorage (fallback after Firestore error):", wishData);
+                        return;
+                    } catch (e) {}
+                }
+                // If no localStorage, try scheduled birthdays
+                const activeScheduled = getActiveScheduledBirthdays();
+                if (activeScheduled.length > 0) {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const todayMatch = activeScheduled.find(item => item.targetDate === todayStr);
+                    if (todayMatch) {
+                        wishData = { ...DEFAULT_WISH_DATA, ...todayMatch };
+                        console.log("✅ Loaded scheduled birthday matching TODAY:", wishData);
+                        return;
+                    }
+                    const latestWish = activeScheduled[activeScheduled.length - 1];
+                    if (latestWish) {
+                        wishData = { ...DEFAULT_WISH_DATA, ...latestWish };
+                        console.log("✅ Loaded latest active scheduled wish:", wishData);
+                        return;
+                    }
+                }
             }
         }
     }
@@ -414,20 +443,45 @@ function triggerSkySticksBurst() {
 }
 
 /* =========================================================
-   MP3 AUDIO MUSIC CONTROLLER
+   MP3 AUDIO MUSIC CONTROLLER (FIXED)
    ========================================================= */
 function setupAudioPlayer() {
     const audio = document.getElementById('bg-music');
     if (!audio) return;
-    const musicUrl = wishData.music || "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3";
-    audio.src = musicUrl;
+
+    // Use a reliable fallback URL
+    const fallbackUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+    const musicUrl = wishData.music || fallbackUrl;
+
+    // Only set src if different to avoid reloading
+    if (audio.src !== musicUrl) {
+        audio.src = musicUrl;
+        // 🔥 CRITICAL: Tell the browser to load the source
+        audio.load();
+    }
+
+    // Handle errors: if primary fails, try fallback
+    audio.onerror = function() {
+        console.warn("Primary audio failed, trying fallback...");
+        if (audio.src !== fallbackUrl) {
+            audio.src = fallbackUrl;
+            audio.load();
+        } else {
+            console.warn("Fallback audio also failed.");
+        }
+    };
 }
 
 function playWishAudioAndEffects() {
     const audio = document.getElementById('bg-music');
     if (audio) {
+        // 🔥 Ensure the source is loaded before playing
+        audio.load();
         audio.currentTime = 0;
-        audio.play().catch(e => console.warn("Auto audio play blocked:", e));
+        audio.play().catch(e => {
+            // Auto-play blocked by browser (common on mobile)
+            console.warn("Auto audio play blocked:", e);
+        });
     }
     triggerSkySticksBurst();
 }
