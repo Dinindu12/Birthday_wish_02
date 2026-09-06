@@ -1,6 +1,6 @@
 /**
  * Birthday Wish Web Application - Dynamic Renderer & Controller (Cloud Firestore Edition)
- * FIXED: Mobile/Vercel name display & Audio "no supported sources" error
+ * FIXED: Full working version with fallback data and reliable audio
  */
 
 // Neutral Empty Fallback Wish Data
@@ -13,7 +13,7 @@ const DEFAULT_WISH_DATA = {
     cardSubTitle: "",
     letterText: "No active birthday wish found for today. Use the Admin Panel to create or schedule a new wish!",
     themeColor: "#FF7882",
-    // 🔥 FIX: Use a reliable public MP3 URL as default
+    // ✅ Reliable public MP3 URL that works on all browsers (including mobile)
     music: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
 };
 
@@ -89,7 +89,7 @@ async function loadWishData() {
         const parsed = decodeWishData(encodedData);
         if (parsed) {
             wishData = { ...DEFAULT_WISH_DATA, ...parsed };
-            console.log("Loaded wish data from URL params:", wishData);
+            console.log("✅ Loaded wish data from URL params:", wishData);
             return;
         }
     }
@@ -103,15 +103,16 @@ async function loadWishData() {
                 const docSnap = await docRef.get();
                 if (docSnap.exists) {
                     wishData = { ...DEFAULT_WISH_DATA, ...docSnap.data() };
-                    console.log("Loaded wish data from Cloud Firestore:", wishData);
+                    console.log("✅ Loaded wish data from Cloud Firestore:", wishData);
                     return;
                 } else {
                     console.log("No such Firestore document!");
                 }
             } catch (err) {
-                // 🔥 FIX: If Firestore fails (permissions), fallback to localStorage immediately
+                // 🔥 If Firestore fails (permissions), fallback to localStorage immediately
                 console.warn("Firestore fetch error:", err);
-                // Try to load from localStorage as a fallback
+                
+                // Try to load from localStorage (last created wish)
                 const localSaved = localStorage.getItem('last_created_wish');
                 if (localSaved) {
                     try {
@@ -121,6 +122,7 @@ async function loadWishData() {
                         return;
                     } catch (e) {}
                 }
+
                 // If no localStorage, try scheduled birthdays
                 const activeScheduled = getActiveScheduledBirthdays();
                 if (activeScheduled.length > 0) {
@@ -149,29 +151,31 @@ async function loadWishData() {
         const todayMatch = activeScheduled.find(item => item.targetDate === todayStr);
         if (todayMatch) {
             wishData = { ...DEFAULT_WISH_DATA, ...todayMatch };
-            console.log("Loaded scheduled birthday matching TODAY:", wishData);
+            console.log("✅ Loaded scheduled birthday matching TODAY:", wishData);
             return;
         }
         const latestWish = activeScheduled[activeScheduled.length - 1];
         if (latestWish) {
             wishData = { ...DEFAULT_WISH_DATA, ...latestWish };
-            console.log("Loaded latest active scheduled wish:", wishData);
+            console.log("✅ Loaded latest active scheduled wish:", wishData);
             return;
         }
     }
 
-    // 4. Fallback localStorage preview
+    // 4. Fallback localStorage preview (if no ID and no data)
     const localSaved = localStorage.getItem('last_created_wish');
     if (localSaved && !encodedData && !wishId) {
         try {
             const parsedLocal = JSON.parse(localSaved);
             wishData = { ...DEFAULT_WISH_DATA, ...parsedLocal };
-            console.log("Loaded wish data from localStorage preview:", wishData);
+            console.log("✅ Loaded wish data from localStorage preview:", wishData);
             return;
         } catch (e) {}
     }
 
+    // 5. Default fallback (empty)
     wishData = { ...DEFAULT_WISH_DATA };
+    console.log("⚠️ No wish data found. Using default.");
 }
 
 // Render dynamic elements into the DOM
@@ -443,44 +447,54 @@ function triggerSkySticksBurst() {
 }
 
 /* =========================================================
-   MP3 AUDIO MUSIC CONTROLLER (FIXED)
+   MP3 AUDIO MUSIC CONTROLLER (FULLY FIXED)
    ========================================================= */
 function setupAudioPlayer() {
     const audio = document.getElementById('bg-music');
     if (!audio) return;
 
-    // Use a reliable fallback URL
+    // Reliable fallback (SoundHelix - works on all browsers)
     const fallbackUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
     const musicUrl = wishData.music || fallbackUrl;
+
+    // Set preload to auto (browser will load the file in background)
+    audio.preload = "auto";
 
     // Only set src if different to avoid reloading
     if (audio.src !== musicUrl) {
         audio.src = musicUrl;
-        // 🔥 CRITICAL: Tell the browser to load the source
-        audio.load();
     }
 
-    // Handle errors: if primary fails, try fallback
+    // Handle errors - try fallback once if primary fails
+    let fallbackAttempted = false;
     audio.onerror = function() {
-        console.warn("Primary audio failed, trying fallback...");
-        if (audio.src !== fallbackUrl) {
+        if (!fallbackAttempted && audio.src !== fallbackUrl) {
+            console.warn("Primary audio failed, trying fallback...");
+            fallbackAttempted = true;
             audio.src = fallbackUrl;
-            audio.load();
+            // Reset error handler to avoid infinite loop
+            audio.onerror = null;
         } else {
-            console.warn("Fallback audio also failed.");
+            console.warn("Fallback audio also failed. Please check network.");
         }
+    };
+
+    // Clear the error handler when loading succeeds
+    audio.oncanplaythrough = function() {
+        audio.onerror = null;
+        console.log("✅ Audio loaded successfully.");
     };
 }
 
 function playWishAudioAndEffects() {
     const audio = document.getElementById('bg-music');
     if (audio) {
-        // 🔥 Ensure the source is loaded before playing
-        audio.load();
+        // Reset and play
         audio.currentTime = 0;
         audio.play().catch(e => {
             // Auto-play blocked by browser (common on mobile)
             console.warn("Auto audio play blocked:", e);
+            // (optional) show a hint to user to tap again?
         });
     }
     triggerSkySticksBurst();
