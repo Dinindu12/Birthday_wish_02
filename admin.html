@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Sriracha&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (Compat) - Cloud Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script src="js/firebase-config.js"></script>
 
     <style>
@@ -23,14 +23,12 @@
             --text-color: #2D3748;
             --border-radius: 16px;
         }
-
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Poppins', sans-serif;
         }
-
         body {
             background-color: #FFF3F5;
             color: var(--text-color);
@@ -42,8 +40,6 @@
             justify-content: flex-start;
             position: relative;
         }
-
-        /* Login Modal Overlay */
         #login-overlay {
             position: fixed;
             top: 0;
@@ -58,7 +54,6 @@
             align-items: center;
             padding: 20px;
         }
-
         .login-card {
             background: #FFFFFF;
             width: 100%;
@@ -70,12 +65,10 @@
             border: 2px solid #FFD1D5;
             animation: modalPop 0.4s ease;
         }
-
         @keyframes modalPop {
             from { transform: scale(0.85); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
         }
-
         .login-card h2 {
             color: #FF5362;
             margin-bottom: 8px;
@@ -85,18 +78,15 @@
             justify-content: center;
             gap: 8px;
         }
-
         .login-card p {
             color: #718096;
             font-size: 0.88rem;
             margin-bottom: 25px;
         }
-
         .login-field {
             margin-bottom: 18px;
             text-align: left;
         }
-
         .login-field label {
             font-size: 0.85rem;
             font-weight: 600;
@@ -104,7 +94,6 @@
             margin-bottom: 6px;
             display: block;
         }
-
         .login-field input {
             width: 100%;
             padding: 12px 16px;
@@ -114,12 +103,10 @@
             outline: none;
             transition: all 0.3s;
         }
-
         .login-field input:focus {
             border-color: #FF7882;
             box-shadow: 0 0 0 3px rgba(255, 120, 130, 0.15);
         }
-
         .btn-login {
             width: 100%;
             background: linear-gradient(135deg, #FF7882 0%, #FF5362 100%);
@@ -134,12 +121,10 @@
             transition: all 0.3s ease;
             margin-top: 5px;
         }
-
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 83, 98, 0.45);
         }
-
         .login-error {
             display: none;
             color: #E53E3E;
@@ -151,8 +136,6 @@
             border-radius: 8px;
             border: 1px solid #FEB2B2;
         }
-
-        /* Protected Dashboard Container */
         .admin-container {
             max-width: 900px;
             width: 100%;
@@ -163,13 +146,11 @@
             border: 2px solid #FFE4E6;
             position: relative;
         }
-
         .admin-container.protected-blur {
             filter: blur(10px);
             pointer-events: none;
             user-select: none;
         }
-
         .header {
             text-align: center;
             margin-bottom: 30px;
@@ -177,7 +158,6 @@
             border-bottom: 2px dashed #FFD1D5;
             position: relative;
         }
-
         .header h1 {
             color: #FF5362;
             font-size: 2rem;
@@ -186,13 +166,11 @@
             justify-content: center;
             gap: 10px;
         }
-
         .header p {
             color: #718096;
             font-size: 0.95rem;
             margin-top: 5px;
         }
-
         .btn-back {
             position: absolute;
             left: 0;
@@ -209,12 +187,10 @@
             gap: 6px;
             transition: all 0.2s ease;
         }
-
         .btn-back:hover {
             background: #FF7882;
             color: white;
         }
-
         .btn-logout {
             position: absolute;
             right: 0;
@@ -232,39 +208,31 @@
             gap: 6px;
             transition: all 0.2s ease;
         }
-
         .btn-logout:hover {
             background: #E2E8F0;
             color: #E53E3E;
         }
-
         .form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
         @media (max-width: 768px) {
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
+            .form-grid { grid-template-columns: 1fr; }
             .btn-back, .btn-logout {
                 position: static;
                 margin-top: 10px;
                 display: inline-flex;
             }
         }
-
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
-
         .form-group.full-width {
             grid-column: 1 / -1;
         }
-
         label {
             font-weight: 600;
             font-size: 0.9rem;
@@ -273,7 +241,6 @@
             align-items: center;
             gap: 6px;
         }
-
         input[type="text"],
         input[type="password"],
         input[type="date"],
@@ -287,7 +254,6 @@
             outline: none;
             transition: all 0.3s ease;
         }
-
         input[type="text"]:focus,
         input[type="password"]:focus,
         input[type="date"]:focus,
@@ -296,13 +262,10 @@
             border-color: #FF7882;
             box-shadow: 0 0 0 3px rgba(255, 120, 130, 0.15);
         }
-
-        /* Gender Radio Selector */
         .gender-selector {
             display: flex;
             gap: 15px;
         }
-
         .gender-card {
             flex: 1;
             padding: 15px;
@@ -317,38 +280,24 @@
             gap: 8px;
             font-weight: 600;
         }
-
-        .gender-card.girl-card {
-            color: #FF5362;
-        }
-
-        .gender-card.boy-card {
-            color: #1E88E5;
-        }
-
-        input[type="radio"] {
-            display: none;
-        }
-
+        .gender-card.girl-card { color: #FF5362; }
+        .gender-card.boy-card { color: #1E88E5; }
+        input[type="radio"] { display: none; }
         #gender-girl:checked + .girl-card {
             border-color: #FF7882;
             background-color: #FFF0F2;
             box-shadow: 0 4px 12px rgba(255, 120, 130, 0.2);
         }
-
         #gender-boy:checked + .boy-card {
             border-color: #1E88E5;
             background-color: #EBF5FF;
             box-shadow: 0 4px 12px rgba(30, 136, 229, 0.2);
         }
-
-        /* Photo Upload Container */
         .photo-preview-box {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-
         .photo-preview {
             width: 70px;
             height: 70px;
@@ -357,15 +306,12 @@
             border: 3px solid #FF7882;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-
-        /* Buttons & Actions */
         .action-section {
             margin-top: 25px;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-
         .btn-main {
             background: linear-gradient(135deg, #FF7882 0%, #FF5362 100%);
             color: white;
@@ -382,12 +328,10 @@
             justify-content: center;
             gap: 8px;
         }
-
         .btn-main:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 83, 98, 0.45);
         }
-
         .link-output-box {
             display: none;
             background: #F7FAFC;
@@ -396,13 +340,11 @@
             padding: 15px;
             margin-top: 10px;
         }
-
         .link-input-group {
             display: flex;
             gap: 10px;
             margin-top: 8px;
         }
-
         .btn-copy {
             background: #319795;
             color: white;
@@ -413,7 +355,6 @@
             cursor: pointer;
             white-space: nowrap;
         }
-
         .btn-view {
             background: #4A5568;
             color: white;
@@ -425,14 +366,11 @@
             align-items: center;
             gap: 6px;
         }
-
-        /* Scheduled List Section */
         .scheduled-section {
             margin-top: 40px;
             padding-top: 25px;
             border-top: 2px dashed #FFD1D5;
         }
-
         .scheduled-section h2 {
             font-size: 1.3rem;
             color: #2D3748;
@@ -440,13 +378,11 @@
             align-items: center;
             gap: 8px;
         }
-
         .scheduled-section .subtitle {
             font-size: 0.85rem;
             color: #718096;
             margin-bottom: 20px;
         }
-
         .birthday-card-item {
             background: #F8FAFC;
             border: 2px solid #E2E8F0;
@@ -459,18 +395,15 @@
             gap: 15px;
             transition: all 0.3s ease;
         }
-
         .birthday-card-item:hover {
             border-color: #FF7882;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-
         .birthday-card-left {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         .birthday-card-avatar {
             width: 50px;
             height: 50px;
@@ -478,7 +411,6 @@
             object-fit: cover;
             border: 2px solid #FF7882;
         }
-
         .birthday-card-info h4 {
             font-size: 1rem;
             color: #2D3748;
@@ -486,33 +418,27 @@
             align-items: center;
             gap: 8px;
         }
-
         .badge-gender {
             font-size: 0.75rem;
             padding: 2px 8px;
             border-radius: 12px;
             font-weight: 600;
         }
-
         .badge-girl { background: #FFF0F2; color: #FF5362; }
         .badge-boy { background: #EBF5FF; color: #1E88E5; }
-
         .status-badge {
             font-size: 0.78rem;
             padding: 4px 10px;
             border-radius: 20px;
             font-weight: 600;
         }
-
         .status-active { background: #C6F6D5; color: #22543D; }
         .status-upcoming { background: #FEFCBF; color: #744210; }
         .status-expired { background: #FED7D7; color: #742A2A; }
-
         .birthday-card-actions {
             display: flex;
             gap: 8px;
         }
-
         .btn-sm {
             padding: 6px 12px;
             font-size: 0.8rem;
@@ -525,12 +451,9 @@
             gap: 4px;
             text-decoration: none;
         }
-
         .btn-sm-copy { background: #319795; color: white; }
         .btn-sm-view { background: #4A5568; color: white; }
         .btn-sm-delete { background: #E53E3E; color: white; }
-
-        /* Firebase Setup Box */
         .firebase-box {
             background: #EDF2F7;
             border: 2px solid #CBD5E0;
@@ -538,7 +461,6 @@
             padding: 18px;
             margin-bottom: 25px;
         }
-
         .firebase-box h3 {
             font-size: 1rem;
             color: #2D3748;
@@ -547,14 +469,11 @@
             align-items: center;
             gap: 8px;
         }
-
         .firebase-box p {
             font-size: 0.83rem;
             color: #4A5568;
             margin-bottom: 12px;
         }
-
-        /* Footer */
         .admin-footer {
             margin-top: 30px;
             text-align: center;
@@ -572,22 +491,18 @@
         <div class="login-card">
             <h2><i class="fa-solid fa-lock"></i> Admin Access</h2>
             <p>Please enter admin credentials to access configurator.</p>
-
             <form onsubmit="event.preventDefault(); attemptLogin();">
                 <div class="login-field">
                     <label for="login-username"><i class="fa-solid fa-user-shield"></i> Username</label>
                     <input type="text" id="login-username" placeholder="Enter Admin Username" required autocomplete="username">
                 </div>
-
                 <div class="login-field">
                     <label for="login-password"><i class="fa-solid fa-key"></i> Password</label>
                     <input type="password" id="login-password" placeholder="Enter Admin Password" required autocomplete="current-password">
                 </div>
-
                 <div id="login-error" class="login-error">
                     <i class="fa-solid fa-triangle-exclamation"></i> Invalid Username or Password!
                 </div>
-
                 <button type="submit" class="btn-login">
                     <i class="fa-solid fa-right-to-bracket"></i> Login to Admin Panel
                 </button>
@@ -608,22 +523,16 @@
             <p>Customize Girl (Pink) & Boy (Blue) themes, dynamic names, dates, photos & wishes!</p>
         </div>
 
-        <!-- Firebase Primary Database Setup Box -->
+        <!-- Firebase Cloud Firestore Status Box -->
         <div class="firebase-box">
-            <h3><i class="fa-solid fa-fire" style="color: #FF6D00;"></i> Firebase Realtime Database (Connected & Active 🔥)</h3>
-            <p>Your Firebase Realtime Database is connected! All wishes save globally with clean short IDs (`?id=-P0ej6...`).</p>
-            <div style="display: flex; gap: 10px;">
-                <input type="text" id="fb_db_url" value="https://birthday-wishes-3f440-default-rtdb.firebaseio.com" placeholder="e.g. https://your-project-default-rtdb.firebaseio.com" style="flex: 1;" onchange="saveFirebaseUrl(this.value)">
-                <button type="button" class="btn-copy" style="background: #FF6D00;" onclick="saveFirebaseUrl(document.getElementById('fb_db_url').value)">
-                    <i class="fa-solid fa-floppy-disk"></i> Save DB URL
-                </button>
-            </div>
+            <h3><i class="fa-solid fa-fire" style="color: #FF6D00;"></i> Cloud Firestore (Connected & Active 🔥)</h3>
+            <p>Your Cloud Firestore database is connected! All wishes are saved globally with Firestore document IDs.</p>
         </div>
 
         <form id="wish-form" onsubmit="event.preventDefault(); generateLink();">
             <div class="form-grid">
                 
-                <!-- 1. Gender Selection -->
+                <!-- Gender Selection -->
                 <div class="form-group full-width">
                     <label><i class="fa-solid fa-venus-mars"></i> Select Theme / Gender</label>
                     <div class="gender-selector">
@@ -631,7 +540,6 @@
                         <label for="gender-girl" class="gender-card girl-card">
                             <i class="fa-solid fa-venus"></i> Girl Theme (Pink 🌸)
                         </label>
-
                         <input type="radio" id="gender-boy" name="gender" value="boy" onchange="updateThemePreview('boy')">
                         <label for="gender-boy" class="gender-card boy-card">
                             <i class="fa-solid fa-mars"></i> Boy Theme (Blue 💙)
@@ -639,31 +547,31 @@
                     </div>
                 </div>
 
-                <!-- 2. Recipient Name -->
+                <!-- Recipient Name -->
                 <div class="form-group">
                     <label for="recipient_name"><i class="fa-solid fa-user"></i> Recipient Name</label>
                     <input type="text" id="recipient_name" placeholder="e.g. Mehwish / Kasun" required value="Mehwish">
                 </div>
 
-                <!-- 3. Birthday Text Date -->
+                <!-- Birthday Label Text -->
                 <div class="form-group">
                     <label for="birthday_date"><i class="fa-solid fa-tag"></i> Birthday Label Text</label>
                     <input type="text" id="birthday_date" placeholder="e.g. 27 May / Oct 15" required value="27 May">
                 </div>
 
-                <!-- 4. Schedule Date Target -->
+                <!-- Schedule Target Date -->
                 <div class="form-group">
                     <label for="schedule_target_date"><i class="fa-solid fa-calendar-day"></i> Schedule Birthday Date (Target Date)</label>
                     <input type="date" id="schedule_target_date" required>
                 </div>
 
-                <!-- 5. Theme Accent Color fine-tune -->
+                <!-- Theme Color -->
                 <div class="form-group">
                     <label for="theme_color"><i class="fa-solid fa-palette"></i> Custom Color Accent</label>
                     <input type="color" id="theme_color" value="#FF7882" style="height: 48px; cursor: pointer;">
                 </div>
 
-                <!-- 6. Profile Photo -->
+                <!-- Profile Photo -->
                 <div class="form-group full-width">
                     <label><i class="fa-solid fa-image"></i> Profile Photo (URL or File Upload)</label>
                     <div class="photo-preview-box">
@@ -675,15 +583,15 @@
                     </div>
                 </div>
 
-                <!-- 7. Card Subtitle / Header -->
+                <!-- Envelope Title -->
                 <div class="form-group full-width">
                     <label for="card_title"><i class="fa-solid fa-envelope"></i> Envelope Title</label>
                     <input type="text" id="card_title" placeholder="e.g. To You! / Happy Birthday Champ" value="To You!">
                 </div>
 
-                <!-- 8. MP3 Background Music -->
+                <!-- MP3 Music -->
                 <div class="form-group full-width">
-                    <label for="music_url"><i class="fa-solid fa-music"></i> Birthday Song / MP3 Music (Plays when clicking "Click Here")</label>
+                    <label for="music_url"><i class="fa-solid fa-music"></i> Birthday Song / MP3 Music</label>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" id="music_url" placeholder="Paste MP3 Music URL or choose preset below..." style="flex: 1;" value="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3">
                         <input type="file" id="music_file" accept="audio/*" style="display:none;" onchange="handleAudioUpload(event)">
@@ -702,7 +610,7 @@
                     </div>
                 </div>
 
-                <!-- 9. Full Wish Letter Message -->
+                <!-- Wish Letter -->
                 <div class="form-group full-width">
                     <label for="letter_text"><i class="fa-solid fa-envelope-open-text"></i> Birthday Wish Letter Message</label>
                     <textarea id="letter_text" rows="4" placeholder="Write your heartfelt birthday wish here..." required>Happy birthday 🥳🎂🥳 the day you came into my life I was not really attached to you, but day by day you became so close to my heart. I wish you all the happiness, joy, and success in the world! May all your dreams come true! 🎈🎂🎈 Don't be sad, always stay happy and keep smiling! 😌✨</textarea>
@@ -730,42 +638,31 @@
             </div>
         </form>
 
-        <!-- Scheduled & Added Birthdays List Section -->
+        <!-- Scheduled & Added Birthdays List -->
         <div class="scheduled-section">
             <h2><i class="fa-solid fa-calendar-check"></i> Added & Scheduled Birthdays List</h2>
             <p class="subtitle">
                 Birthdays automatically display on their scheduled date and auto-delete 24 hours after their birthday!
             </p>
-
             <div id="scheduled-list-container">
                 <!-- Dynamically rendered by JS -->
             </div>
         </div>
     </div>
 
-    <!-- Admin Footer -->
     <footer class="admin-footer">
         Developed with ❤️ by Dinindu Jayampathi
     </footer>
 
     <script>
-        // Default Admin Credentials
+        // Admin Credentials
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "admin123";
 
-        // Check authentication state & initialize default date
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth();
-            
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('schedule_target_date').value = todayStr;
-            
-            // Load saved Firebase URL if available
-            const savedFb = localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
-            if (savedFb && !savedFb.includes('YOUR_PROJECT_ID')) {
-                document.getElementById('fb_db_url').value = savedFb;
-            }
-
             renderScheduledBirthdays();
         });
 
@@ -773,7 +670,6 @@
             const isAuth = sessionStorage.getItem('admin_authenticated') === 'true';
             const overlay = document.getElementById('login-overlay');
             const container = document.getElementById('admin-container');
-
             if (isAuth) {
                 overlay.style.display = 'none';
                 container.classList.remove('protected-blur');
@@ -787,7 +683,6 @@
             const userIn = document.getElementById('login-username').value.trim();
             const passIn = document.getElementById('login-password').value.trim();
             const errorBox = document.getElementById('login-error');
-
             if (userIn === ADMIN_USER && passIn === ADMIN_PASS) {
                 sessionStorage.setItem('admin_authenticated', 'true');
                 errorBox.style.display = 'none';
@@ -802,18 +697,9 @@
             checkAuth();
         }
 
-        function saveFirebaseUrl(url) {
-            if (url) {
-                const cleanUrl = url.trim().replace(/\/+$/, '');
-                localStorage.setItem('firebase_db_url', cleanUrl);
-                alert("🔥 Firebase Database URL saved successfully!");
-            }
-        }
-
         function updateThemePreview(gender) {
             const colorPicker = document.getElementById('theme_color');
             const previewImg = document.getElementById('photo-preview');
-            
             if (gender === 'boy') {
                 colorPicker.value = '#1E88E5';
                 previewImg.style.borderColor = '#1E88E5';
@@ -829,7 +715,6 @@
             }
         }
 
-        // High-definition image upload handler
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
@@ -839,28 +724,16 @@
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
-                        
-                        // HD photo sizing (600px max dimension, 0.85 quality)
                         const maxDim = 600;
-                        let width = img.width;
-                        let height = img.height;
-                        
+                        let width = img.width, height = img.height;
                         if (width > height) {
-                            if (width > maxDim) {
-                                height *= maxDim / width;
-                                width = maxDim;
-                            }
+                            if (width > maxDim) { height *= maxDim / width; width = maxDim; }
                         } else {
-                            if (height > maxDim) {
-                                width *= maxDim / height;
-                                height = maxDim;
-                            }
+                            if (height > maxDim) { width *= maxDim / height; height = maxDim; }
                         }
-
                         canvas.width = width;
                         canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
-
                         const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.85);
                         document.getElementById('photo-preview').src = compressedDataUrl;
                         document.getElementById('photo_url').value = compressedDataUrl;
@@ -877,112 +750,192 @@
             try {
                 const list = JSON.parse(raw);
                 const now = new Date();
-                
                 const activeList = list.filter(item => {
                     if (!item.targetDate) return true;
                     const targetEnd = new Date(item.targetDate + "T23:59:59");
                     const hoursPast = (now - targetEnd) / (1000 * 60 * 60);
                     return hoursPast <= 24;
                 });
-
                 if (activeList.length !== list.length) {
                     localStorage.setItem('scheduled_birthdays', JSON.stringify(activeList));
                 }
-
                 return activeList;
             } catch (e) {
                 return [];
             }
         }
 
-        // Build safe wish link via Firebase Realtime Database REST API or Base64 Fallback
-        async function buildSafeWishUrl(wishObj) {
-            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
-            const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url');
+        // ---------------- Cloud Firestore REST API Helpers ----------------
 
-            // 1. Primary: Save to Firebase Realtime Database via REST API (Instant & Zero Config overhead)
-            if (fbUrl && fbUrl.trim() !== "") {
-                try {
-                    const cleanFbUrl = fbUrl.trim().replace(/\/+$/, '');
-                    const restEndpoint = `${cleanFbUrl}/wishes.json`;
-                    
-                    const res = await fetch(restEndpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(wishObj)
-                    });
+        function getFirestoreBaseUrl() {
+            const config = window.firebaseAppConfig;
+            if (!config || !config.projectId) return null;
+            return `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents`;
+        }
 
-                    if (res.ok) {
-                        const json = await res.json();
-                        if (json && json.name) {
-                            console.log("Saved to Firebase DB via REST API with ID:", json.name);
-                            return `${baseUrl}?id=${encodeURIComponent(json.name)}`;
-                        }
+        // Save wish to Cloud Firestore via REST API (auto-generates document ID)
+        async function saveWishToFirestore(wishObj) {
+            const baseUrl = getFirestoreBaseUrl();
+            if (!baseUrl) return null;
+
+            try {
+                const endpoint = `${baseUrl}/wishes`;
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ fields: encodeFirestoreFields(wishObj) })
+                });
+                if (response.ok) {
+                    const json = await response.json();
+                    // json.name contains the document ID
+                    if (json && json.name) {
+                        const docId = json.name.split('/').pop();
+                        return docId;
                     }
-                } catch (e) {
-                    console.warn("Firebase REST save error:", e);
+                } else {
+                    console.warn("Firestore REST POST failed:", response.status);
+                }
+            } catch (e) {
+                console.warn("Firestore REST save error:", e);
+            }
+            return null;
+        }
+
+        // Encode JS object to Firestore Field format
+        function encodeFirestoreFields(obj) {
+            const fields = {};
+            for (const [key, val] of Object.entries(obj)) {
+                if (typeof val === 'string') {
+                    fields[key] = { stringValue: val };
+                } else if (typeof val === 'number') {
+                    fields[key] = { integerValue: val };
+                } else if (typeof val === 'boolean') {
+                    fields[key] = { booleanValue: val };
+                } else if (val instanceof Date) {
+                    fields[key] = { timestampValue: val.toISOString() };
+                } else if (Array.isArray(val)) {
+                    fields[key] = { arrayValue: { values: val.map(v => ({ stringValue: String(v) })) } };
+                } else if (val === null || val === undefined) {
+                    fields[key] = { nullValue: null };
+                } else {
+                    fields[key] = { stringValue: String(val) };
                 }
             }
+            return fields;
+        }
 
-            // 2. Firebase SDK Fallback
-            if (window.firebase && window.firebaseAppConfig && window.firebaseAppConfig.databaseURL) {
+        // Decode Firestore Field format to JS object
+        function decodeFirestoreFields(fields) {
+            const obj = {};
+            for (const [key, val] of Object.entries(fields)) {
+                if (val.stringValue !== undefined) obj[key] = val.stringValue;
+                else if (val.integerValue !== undefined) obj[key] = Number(val.integerValue);
+                else if (val.booleanValue !== undefined) obj[key] = val.booleanValue;
+                else if (val.timestampValue !== undefined) obj[key] = val.timestampValue;
+                else if (val.nullValue !== undefined) obj[key] = null;
+                else obj[key] = val;
+            }
+            return obj;
+        }
+
+        // Fetch all wishes from Firestore via REST API
+        async function fetchFirestoreWishes() {
+            const baseUrl = getFirestoreBaseUrl();
+            if (!baseUrl) return {};
+
+            try {
+                const endpoint = `${baseUrl}/wishes`;
+                const response = await fetch(endpoint);
+                if (response.ok) {
+                    const json = await response.json();
+                    const result = {};
+                    if (json.documents) {
+                        for (const doc of json.documents) {
+                            const docId = doc.name.split('/').pop();
+                            if (doc.fields) {
+                                const data = decodeFirestoreFields(doc.fields);
+                                data.fbKey = docId;
+                                data.id = docId;
+                                result[docId] = data;
+                            }
+                        }
+                    }
+                    return result;
+                } else {
+                    console.warn("Firestore REST list failed:", response.status);
+                }
+            } catch (e) {
+                console.warn("Firestore REST fetch error:", e);
+            }
+            return {};
+        }
+
+        // Delete a Firestore document via REST API
+        async function deleteFirestoreDocument(docId) {
+            const baseUrl = getFirestoreBaseUrl();
+            if (!baseUrl || !docId) return false;
+            try {
+                const endpoint = `${baseUrl}/wishes/${encodeURIComponent(docId)}`;
+                const response = await fetch(endpoint, { method: 'DELETE' });
+                return response.ok;
+            } catch (e) {
+                console.warn("Firestore REST delete error:", e);
+                return false;
+            }
+        }
+
+        // ---------------- Build Shareable URL ----------------
+
+        async function buildSafeWishUrl(wishObj) {
+            const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + '/index.html';
+
+            // 1. Primary: Save to Cloud Firestore via REST API
+            const docId = await saveWishToFirestore(wishObj);
+            if (docId) {
+                return `${baseUrl}?id=${encodeURIComponent(docId)}`;
+            }
+
+            // 2. Fallback: Firebase SDK
+            if (window.firebase && window.firebaseAppConfig) {
                 try {
                     if (!firebase.apps.length) {
                         firebase.initializeApp(window.firebaseAppConfig);
                     }
-                    const newWishRef = firebase.database().ref('wishes').push();
-                    await newWishRef.set(wishObj);
-                    return `${baseUrl}?id=${newWishRef.key}`;
+                    const db = firebase.firestore();
+                    const docRef = await db.collection('wishes').add(wishObj);
+                    return `${baseUrl}?id=${docRef.id}`;
                 } catch (e) {
-                    console.warn("Firebase SDK save error:", e);
+                    console.warn("Firestore SDK fallback error:", e);
                 }
             }
 
-            // 3. Fallback Base64 URL (Capped to prevent URI Too Long error)
+            // 3. Base64 URL fallback (trim large images)
             const safeObj = { ...wishObj };
             if (safeObj.photo && safeObj.photo.startsWith('data:image') && safeObj.photo.length > 2500) {
                 safeObj.photo = "./images/unnamed.png";
             }
-
             const jsonString = JSON.stringify(safeObj);
             const encoded = btoa(encodeURIComponent(jsonString));
             return `${baseUrl}?data=${encoded}`;
         }
 
-        // Helper to fetch live wishes directly from Firebase Realtime Database
-        async function fetchFirebaseWishes() {
-            const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
-            if (!fbUrl) return {};
+        // ---------------- Render Scheduled List ----------------
 
-            try {
-                const cleanUrl = fbUrl.trim().replace(/\/+$/, '');
-                const res = await fetch(`${cleanUrl}/wishes.json`);
-                if (res.ok) {
-                    const data = await res.json();
-                    return data || {};
-                }
-            } catch (e) {
-                console.warn("Failed to fetch Firebase wishes:", e);
-            }
-            return {};
-        }
-
-        // Render Scheduled Birthdays in Admin Panel List (Synced Live with Firebase & LocalStorage)
         async function renderScheduledBirthdays() {
             const container = document.getElementById('scheduled-list-container');
             container.innerHTML = `
                 <div style="text-align: center; padding: 25px; color: #718096;">
                     <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; color: #FF7882;"></i>
-                    <p style="margin-top: 8px; font-weight: 500;">Syncing birthdays from Firebase Cloud Database...</p>
+                    <p style="margin-top: 8px; font-weight: 500;">Syncing birthdays from Cloud Firestore...</p>
                 </div>
             `;
 
             const localList = getScheduledList();
-            const fbData = await fetchFirebaseWishes();
+            const fbData = await fetchFirestoreWishes();
 
             const combinedMap = new Map();
 
-            // 1. Process Firebase items
+            // Process Firestore items
             if (fbData && typeof fbData === 'object') {
                 Object.keys(fbData).forEach(key => {
                     const item = fbData[key];
@@ -990,13 +943,13 @@
                         combinedMap.set(key, {
                             ...item,
                             fbKey: key,
-                            id: item.id || key
+                            id: key
                         });
                     }
                 });
             }
 
-            // 2. Process LocalStorage items
+            // Process LocalStorage items (for backward compatibility)
             localList.forEach(item => {
                 const key = item.fbKey || item.id || item.name;
                 if (!combinedMap.has(key)) {
@@ -1022,8 +975,8 @@
 
             for (const item of combinedList) {
                 const isGirl = item.gender === 'girl';
-                const genderBadge = isGirl ? 
-                    `<span class="badge-gender badge-girl"><i class="fa-solid fa-venus"></i> Girl</span>` : 
+                const genderBadge = isGirl ?
+                    `<span class="badge-gender badge-girl"><i class="fa-solid fa-venus"></i> Girl</span>` :
                     `<span class="badge-gender badge-boy"><i class="fa-solid fa-mars"></i> Boy</span>`;
                 
                 let statusBadge = '';
@@ -1035,12 +988,8 @@
                     statusBadge = `<span class="status-badge status-expired"><i class="fa-solid fa-hourglass-end"></i> Auto-Deleting Soon (24h)</span>`;
                 }
 
-                // If Firebase key exists, generate direct short link ?id=-Key
-                const wishUrl = item.fbKey ? `${baseUrl}?id=${encodeURIComponent(item.fbKey)}` : await buildSafeWishUrl(item);
-
-                const safeId = (item.id || '').toString().replace(/"/g, '&quot;');
-                const safeFbKey = (item.fbKey || '').toString().replace(/"/g, '&quot;');
-                const safeWishUrl = encodeURI(wishUrl);
+                const docId = item.fbKey || item.id;
+                const wishUrl = docId ? `${baseUrl}?id=${encodeURIComponent(docId)}` : await buildSafeWishUrl(item);
 
                 html += `
                     <div class="birthday-card-item">
@@ -1054,13 +1003,13 @@
                             </div>
                         </div>
                         <div class="birthday-card-actions">
-                            <button class="btn-sm btn-sm-copy" data-url="${safeWishUrl}" onclick="handleCopyClick(this)">
+                            <button class="btn-sm btn-sm-copy" data-url="${encodeURI(wishUrl)}" onclick="handleCopyClick(this)">
                                 <i class="fa-solid fa-copy"></i> Copy Link
                             </button>
                             <a href="${wishUrl}" target="_blank" class="btn-sm btn-sm-view">
                                 <i class="fa-solid fa-eye"></i> View
                             </a>
-                            <button class="btn-sm btn-sm-delete" data-id="${safeId}" data-fbkey="${safeFbKey}" onclick="handleDeleteClick(this)">
+                            <button class="btn-sm btn-sm-delete" data-id="${docId || ''}" onclick="handleDeleteClick(this)">
                                 <i class="fa-solid fa-trash"></i>
                             </button>
                         </div>
@@ -1071,7 +1020,6 @@
             container.innerHTML = html;
         }
 
-        // Copy button click proxy
         function handleCopyClick(btn) {
             const rawUrl = btn.getAttribute('data-url');
             if (rawUrl) {
@@ -1081,75 +1029,31 @@
             }
         }
 
-        // Delete button click proxy
         async function handleDeleteClick(btn) {
-            const id = btn.getAttribute('data-id');
-            const fbKey = btn.getAttribute('data-fbkey');
-
-            if (!confirm("Are you sure you want to permanently delete this birthday wish?")) return;
+            const docId = btn.getAttribute('data-id');
+            if (!docId) {
+                alert("Cannot delete: missing document ID.");
+                return;
+            }
+            if (!confirm("Are you sure you want to permanently delete this birthday wish from Cloud Firestore?")) return;
 
             btn.disabled = true;
             btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
 
-            await deleteScheduledWish(id, fbKey);
-        }
-
-        // Delete wish permanently from Firebase Cloud Realtime DB and LocalStorage
-        async function deleteScheduledWish(id, fbKey) {
-            const fbUrl = document.getElementById('fb_db_url').value.trim() || localStorage.getItem('firebase_db_url') || (window.firebaseAppConfig ? window.firebaseAppConfig.databaseURL : "");
-            const cleanUrl = fbUrl ? fbUrl.trim().replace(/\/+$/, '') : "";
-
-            const keysToDelete = new Set();
-            if (fbKey) keysToDelete.add(fbKey);
-            if (id && typeof id === 'string' && id.startsWith('-')) keysToDelete.add(id);
-
-            if (cleanUrl) {
-                // 1. Delete direct target keys first
-                for (const key of keysToDelete) {
-                    try {
-                        const delRes = await fetch(`${cleanUrl}/wishes/${encodeURIComponent(key)}.json`, {
-                            method: 'DELETE'
-                        });
-                        console.log(`Deleted key ${key} status:`, delRes.status);
-                    } catch (e) {
-                        console.warn("Failed to delete key:", key, e);
-                    }
-                }
-
-                // 2. Search Firebase DB for any items matching id or fbKey
-                try {
-                    const res = await fetch(`${cleanUrl}/wishes.json`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data && typeof data === 'object') {
-                            for (const k of Object.keys(data)) {
-                                const item = data[k];
-                                if (k === id || k === fbKey || keysToDelete.has(k) || (item && (item.id == id || item.fbKey == fbKey))) {
-                                    await fetch(`${cleanUrl}/wishes/${encodeURIComponent(k)}.json`, {
-                                        method: 'DELETE'
-                                    });
-                                    console.log(`Deleted matching key ${k} from Firebase DB`);
-                                }
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.warn("Firebase search & delete error:", err);
-                }
-            }
-
-            // 3. Clear from LocalStorage
+            // Delete from Firestore
+            const deleted = await deleteFirestoreDocument(docId);
+            
+            // Also remove from localStorage
             let list = getScheduledList();
-            list = list.filter(item => item.id != id && item.fbKey != fbKey && !keysToDelete.has(item.id) && !keysToDelete.has(item.fbKey));
+            list = list.filter(item => item.id != docId && item.fbKey != docId);
             localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
             localStorage.removeItem('last_created_wish');
 
-            // 4. Wait 250ms before re-rendering list so Firebase DB indexing completes
-            await new Promise(r => setTimeout(r, 250));
+            await new Promise(r => setTimeout(r, 300));
             await renderScheduledBirthdays();
         }
 
-        // MP3 Audio file upload handler
+        // MP3 Audio file upload
         function handleAudioUpload(event) {
             const file = event.target.files[0];
             if (file) {
@@ -1162,7 +1066,7 @@
             }
         }
 
-        // Save & Generate Wish Link
+        // Generate & Save Wish
         async function generateLink() {
             const gender = document.querySelector('input[name="gender"]:checked').value;
             const name = document.getElementById('recipient_name').value.trim();
@@ -1188,31 +1092,22 @@
                 createdAt: new Date().toISOString()
             };
 
+            // Save to localStorage as backup
             let list = getScheduledList();
             list.push(wishObj);
             localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
             localStorage.setItem('last_created_wish', JSON.stringify(wishObj));
 
+            // Generate shareable URL (saves to Firestore)
             const shareableUrl = await buildSafeWishUrl(wishObj);
 
-            renderScheduledBirthdays();
+            // Re-render list
+            await renderScheduledBirthdays();
 
             const urlInput = document.getElementById('generated-url');
             urlInput.value = shareableUrl;
             document.getElementById('btn-open-preview').href = shareableUrl;
             document.getElementById('link-output').style.display = 'block';
-        }
-
-        function deleteScheduledWish(id) {
-            let list = getScheduledList();
-            list = list.filter(item => item.id !== id);
-            localStorage.setItem('scheduled_birthdays', JSON.stringify(list));
-            renderScheduledBirthdays();
-        }
-
-        function copyCustomLink(url) {
-            navigator.clipboard.writeText(url);
-            alert("✨ Birthday Wish Link copied to clipboard!");
         }
 
         function copyGeneratedLink() {

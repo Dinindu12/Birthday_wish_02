@@ -1,9 +1,12 @@
-// Firebase Realtime Database Configuration
+// Firebase Cloud Firestore Configuration
 const firebaseConfig = {
-    databaseURL: "https://birthday-wishes-3f440-default-rtdb.firebaseio.com",
-    apiKey: "",
-    projectId: "birthday-wishes-3f440"
+    apiKey: "AIzaSyBD1DyGnvlNoDRwumUsnHKsU1TbBo-39fs",
+    authDomain: "birthday-wishes-3f440.firebaseapp.com",
+    projectId: "birthday-wishes-3f440",
+    storageBucket: "birthday-wishes-3f440.firebasestorage.app",
+    messagingSenderId: "196544487511",
+    appId: "1:196544487511:web:6604014975e99a7ec9c312"
 };
 
-// Global helper
+// Global helper for other scripts
 window.firebaseAppConfig = firebaseConfig;
