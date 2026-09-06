@@ -1,6 +1,6 @@
 /**
- * Birthday Wish Web Application - Dynamic Renderer & Controller (Cloud Firestore Edition)
- * FIXED: Full working version with fallback data and reliable audio
+ * Birthday Wish Web Application - Dynamic Renderer & Controller
+ * FIXED: YouTube support as default music source
  */
 
 // Neutral Empty Fallback Wish Data
@@ -13,13 +13,15 @@ const DEFAULT_WISH_DATA = {
     cardSubTitle: "",
     letterText: "No active birthday wish found for today. Use the Admin Panel to create or schedule a new wish!",
     themeColor: "#FF7882",
-    // ✅ Reliable public MP3 URL that works on all browsers (including mobile)
-    music: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
+    // 🎵 YouTube Video ID (for default background music)
+    music: "yt:i8o956Fd-os"
 };
 
 let wishData = { ...DEFAULT_WISH_DATA };
+let youtubePlayer = null;
+let isYoutubePlaying = false;
 
-// ===== SAFE LOCALSTORAGE SETTER (QuotaExceededError protection) =====
+// ===== SAFE LOCALSTORAGE SETTER =====
 function safeSetItem(key, value) {
     try {
         localStorage.setItem(key, JSON.stringify(value));
@@ -44,7 +46,7 @@ function decodeWishData(encodedStr) {
     }
 }
 
-// Get Firestore instance (initializes Firebase if needed)
+// Get Firestore instance
 function getFirestore() {
     if (!window.firebase) {
         console.error("Firebase SDK not loaded!");
@@ -56,7 +58,7 @@ function getFirestore() {
     return firebase.firestore();
 }
 
-// Helper: Get active scheduled birthdays from localStorage (with safe set)
+// Helper: Get active scheduled birthdays from localStorage
 function getActiveScheduledBirthdays() {
     const raw = localStorage.getItem('scheduled_birthdays');
     if (!raw) return [];
@@ -84,7 +86,7 @@ async function loadWishData() {
     const encodedData = urlParams.get('data');
     const wishId = urlParams.get('id');
 
-    // 1. Direct Base64 Data URL Mode (highest priority)
+    // 1. Direct Base64 Data URL Mode
     if (encodedData) {
         const parsed = decodeWishData(encodedData);
         if (parsed) {
@@ -109,21 +111,18 @@ async function loadWishData() {
                     console.log("No such Firestore document!");
                 }
             } catch (err) {
-                // 🔥 If Firestore fails (permissions), fallback to localStorage immediately
                 console.warn("Firestore fetch error:", err);
                 
-                // Try to load from localStorage (last created wish)
                 const localSaved = localStorage.getItem('last_created_wish');
                 if (localSaved) {
                     try {
                         const parsedLocal = JSON.parse(localSaved);
                         wishData = { ...DEFAULT_WISH_DATA, ...parsedLocal };
-                        console.log("✅ Loaded wish data from localStorage (fallback after Firestore error):", wishData);
+                        console.log("✅ Loaded wish data from localStorage (fallback):", wishData);
                         return;
                     } catch (e) {}
                 }
 
-                // If no localStorage, try scheduled birthdays
                 const activeScheduled = getActiveScheduledBirthdays();
                 if (activeScheduled.length > 0) {
                     const todayStr = new Date().toISOString().split('T')[0];
@@ -144,7 +143,7 @@ async function loadWishData() {
         }
     }
 
-    // 3. Auto-Show Scheduled Birthday matching Today (YYYY-MM-DD)
+    // 3. Auto-Show Scheduled Birthday
     const activeScheduled = getActiveScheduledBirthdays();
     if (activeScheduled.length > 0) {
         const todayStr = new Date().toISOString().split('T')[0];
@@ -162,7 +161,7 @@ async function loadWishData() {
         }
     }
 
-    // 4. Fallback localStorage preview (if no ID and no data)
+    // 4. Fallback localStorage preview
     const localSaved = localStorage.getItem('last_created_wish');
     if (localSaved && !encodedData && !wishId) {
         try {
@@ -173,7 +172,6 @@ async function loadWishData() {
         } catch (e) {}
     }
 
-    // 5. Default fallback (empty)
     wishData = { ...DEFAULT_WISH_DATA };
     console.log("⚠️ No wish data found. Using default.");
 }
@@ -447,39 +445,101 @@ function triggerSkySticksBurst() {
 }
 
 /* =========================================================
-   MP3 AUDIO MUSIC CONTROLLER (FULLY FIXED)
+   🎵 YOUTUBE + MP3 AUDIO CONTROLLER (HYBRID)
    ========================================================= */
+
+// Check if URL is a YouTube video ID (format: yt:VIDEO_ID)
+function isYouTubeUrl(url) {
+    return typeof url === 'string' && url.startsWith('yt:');
+}
+
+// Extract YouTube video ID from yt:VIDEO_ID format
+function getYouTubeVideoId(url) {
+    return url.replace('yt:', '');
+}
+
+// Create hidden YouTube iframe player
+function createYouTubePlayer(videoId) {
+    // Remove any existing YouTube player
+    const existingPlayer = document.getElementById('youtube-player-container');
+    if (existingPlayer) {
+        existingPlayer.remove();
+    }
+
+    const container = document.createElement('div');
+    container.id = 'youtube-player-container';
+    container.style.position = 'fixed';
+    container.style.bottom = '-100px';
+    container.style.left = '-100px';
+    container.style.width = '1px';
+    container.style.height = '1px';
+    container.style.opacity = '0';
+    container.style.pointerEvents = 'none';
+    container.style.zIndex = '-1';
+    
+    const iframe = document.createElement('iframe');
+    iframe.id = 'youtube-player';
+    iframe.width = '1';
+    iframe.height = '1';
+    iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=0&loop=1&playlist=${videoId}&enablejsapi=1`;
+    iframe.frameBorder = '0';
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = false;
+    
+    container.appendChild(iframe);
+    document.body.appendChild(container);
+    
+    return iframe;
+}
+
 function setupAudioPlayer() {
     const audio = document.getElementById('bg-music');
     if (!audio) return;
 
-    // Reliable fallback (SoundHelix - works on all browsers)
-    const fallbackUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-    const musicUrl = wishData.music || fallbackUrl;
+    const musicUrl = wishData.music || DEFAULT_WISH_DATA.music;
 
-    // Set preload to auto (browser will load the file in background)
-    audio.preload = "auto";
-
-    // Only set src if different to avoid reloading
-    if (audio.src !== musicUrl) {
-        audio.src = musicUrl;
+    // Check if it's a YouTube URL
+    if (isYouTubeUrl(musicUrl)) {
+        const videoId = getYouTubeVideoId(musicUrl);
+        console.log("🎵 Loading YouTube video:", videoId);
+        
+        // Hide the audio element (we'll use YouTube instead)
+        audio.style.display = 'none';
+        
+        // Create YouTube player
+        const iframe = createYouTubePlayer(videoId);
+        
+        // Store reference for play/pause
+        youtubePlayer = iframe;
+        isYoutubePlaying = false;
+        
+        console.log("✅ YouTube player ready");
+        return;
     }
 
-    // Handle errors - try fallback once if primary fails
+    // Regular MP3 audio (fallback)
+    audio.style.display = '';
+    const fallbackUrl = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+    const audioUrl = musicUrl || fallbackUrl;
+
+    audio.preload = "auto";
+
+    if (audio.src !== audioUrl) {
+        audio.src = audioUrl;
+    }
+
     let fallbackAttempted = false;
     audio.onerror = function() {
         if (!fallbackAttempted && audio.src !== fallbackUrl) {
             console.warn("Primary audio failed, trying fallback...");
             fallbackAttempted = true;
             audio.src = fallbackUrl;
-            // Reset error handler to avoid infinite loop
             audio.onerror = null;
         } else {
-            console.warn("Fallback audio also failed. Please check network.");
+            console.warn("Fallback audio also failed.");
         }
     };
 
-    // Clear the error handler when loading succeeds
     audio.oncanplaythrough = function() {
         audio.onerror = null;
         console.log("✅ Audio loaded successfully.");
@@ -487,20 +547,52 @@ function setupAudioPlayer() {
 }
 
 function playWishAudioAndEffects() {
+    // Try YouTube first
+    if (youtubePlayer) {
+        try {
+            // Reload iframe to start playing (since we can't control via JS easily without YouTube API)
+            // We'll use a simple approach: reload the iframe with autoplay=1
+            const videoId = getYouTubeVideoId(wishData.music || DEFAULT_WISH_DATA.music);
+            const iframe = document.getElementById('youtube-player');
+            if (iframe) {
+                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&loop=1&playlist=${videoId}&enablejsapi=1`;
+                isYoutubePlaying = true;
+                console.log("🎵 YouTube video playing");
+            }
+        } catch (e) {
+            console.warn("YouTube play error:", e);
+        }
+    }
+
+    // Also try regular audio (as fallback or additional)
     const audio = document.getElementById('bg-music');
-    if (audio) {
-        // Reset and play
+    if (audio && audio.src) {
         audio.currentTime = 0;
         audio.play().catch(e => {
-            // Auto-play blocked by browser (common on mobile)
             console.warn("Auto audio play blocked:", e);
-            // (optional) show a hint to user to tap again?
         });
     }
+
     triggerSkySticksBurst();
 }
 
 function stopWishAudio() {
+    // Stop YouTube
+    if (youtubePlayer) {
+        try {
+            const iframe = document.getElementById('youtube-player');
+            if (iframe) {
+                const videoId = getYouTubeVideoId(wishData.music || DEFAULT_WISH_DATA.music);
+                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=0&loop=1&playlist=${videoId}&enablejsapi=1`;
+                isYoutubePlaying = false;
+                console.log("⏸️ YouTube video paused");
+            }
+        } catch (e) {
+            console.warn("YouTube pause error:", e);
+        }
+    }
+
+    // Stop regular audio
     const audio = document.getElementById('bg-music');
     if (audio) {
         audio.pause();
