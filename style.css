@@ -1,12 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Coiny&family=Titan+One&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nerko+One&family=Sriracha&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
-*{
+* {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
-:root{
+:root {
     --color-pink: #feecea;
     --color-white: #fff;
     --color-black: #333;
@@ -20,7 +20,8 @@
 }
 
 /* Girl Theme (Pink Default) */
-body.theme-girl, body:not(.theme-boy) {
+body.theme-girl,
+body:not(.theme-boy) {
     --color-pink: #feecea;
     --color-text-pink: #FF7882;
     --color-heart: #FF7882;
@@ -41,7 +42,7 @@ body.theme-boy {
     --flag-filter: hue-rotate(185deg) saturate(1.2);
 }
 
-html{
+html {
     height: 100%;
 }
 body {
@@ -50,7 +51,7 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    background-image:linear-gradient(var(--color-pink), var(--color-pink));
+    background-image: linear-gradient(var(--color-pink), var(--color-pink));
     transition: background-color 0.4s ease;
 }
 
@@ -65,56 +66,57 @@ body {
     z-index: 99999;
 }
 
-#wrapper{
+#wrapper {
     position: relative;
     background-color: transparent;
-    background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, 1) 25%, rgba(255, 255, 255, 1) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 1) 75%, rgba(255, 255, 255, 1) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, 1) 25%, rgba(255, 255, 255,1) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 1) 75%, rgba(255, 255, 255, 1) 76%, transparent 77%, transparent);
-    height:100%;
-    background-size:80px 80px;
+    background-image: linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, 1) 25%, rgba(255, 255, 255, 1) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 1) 75%, rgba(255, 255, 255, 1) 76%, transparent 77%, transparent), linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, 1) 25%, rgba(255, 255, 255, 1) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, 1) 75%, rgba(255, 255, 255, 1) 76%, transparent 77%, transparent);
+    height: 100%;
+    background-size: 80px 80px;
     overflow: hidden;
     z-index: 1;
 }
-.flag__birthday{
+.flag__birthday {
     display: flex;
     justify-content: space-between;
     transform: translateY(-200px);
     animation: translateYFlag 1.5s 2s forwards;
 }
-@keyframes translateYFlag{
-    to{
+@keyframes translateYFlag {
+    to {
         transform: translateY(-10px);
     }
 }
-.flag__birthday .flag__left{
-    transform: rotate(-10deg) translate(-20px,30px);
+.flag__birthday .flag__left {
+    transform: rotate(-10deg) translate(-20px, 30px);
 }
-.flag__birthday .flag__right{
-    transform: rotate(10deg) translate(20px,30px) scaleX(-1);
+.flag__birthday .flag__right {
+    transform: rotate(10deg) translate(20px, 30px) scaleX(-1);
 }
-.content{
+.content {
     width: 100%;
     position: relative;
     display: flex;
     padding-top: 3rem;
 }
-.content .left, .content .right{
+.content .left,
+.content .right {
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
-.content .left{
+.content .left {
     width: 40%;
 }
-.content .right{
+.content .right {
     width: 60%;
 }
-.left .btn{
+.left .btn {
     transform: scale(0);
     animation: scaleCricle 2s 16s forwards ease-in-out;
 }
-#btn__letter{
+#btn__letter {
     position: relative;
     margin-top: 30px;
     background-color: var(--color-text-pink);
@@ -132,34 +134,36 @@ body {
     transform: scale(1);
     transition: all .5s ease-in-out;
 }
-#btn__letter:active{
+#btn__letter:active {
     transform: scale(0.7);
 }
-#btn__letter i{
+#btn__letter i {
     margin-left: 5px;
 }
-#btn__letter:hover{
+#btn__letter:hover {
     border-color: var(--color-heart);
     background-color: var(--color-heart);
     color: #fff;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 }
 
-#btn__letter:hover i{
+#btn__letter:hover i {
     animation: rotateHeart 1s infinite linear;
 }
-@keyframes rotateHeart{
-    0%,50%, 100%{
+@keyframes rotateHeart {
+    0%,
+    50%,
+    100% {
         transform: rotate(0deg);
     }
-    25%{
+    25% {
         transform: rotate(12deg);
     }
-    75%{
+    75% {
         transform: rotate(-12deg);
     }
 }
-.title{
+.title {
     position: relative;
     width: 100%;
     display: flex;
@@ -169,38 +173,40 @@ body {
     flex-direction: column;
     perspective: 1000px;
 }
-.title .happy, .title .birthday{
+.title .happy,
+.title .birthday {
     position: relative;
-    text-shadow: 4px 4px var(--color-black), 
-                -4px 4px var(--color-black), 
-                4px -4px var(--color-black), 
-                -4px -4px var(--color-black), 
-                4px 8px 0 var(--color-black);
+    text-shadow: 4px 4px var(--color-black),
+        -4px 4px var(--color-black),
+        4px -4px var(--color-black),
+        -4px -4px var(--color-black),
+        4px 8px 0 var(--color-black);
     font-weight: bold;
     display: flex;
     justify-content: center;
 }
-.title .happy{
+.title .happy {
     color: var(--color-white);
 }
-.title .happy span, .title .birthday span{
+.title .happy span,
+.title .birthday span {
     transform: translateY(50px);
     opacity: 0;
     visibility: hidden;
     animation: txtTranslateY .5s var(--t) forwards;
 }
-@keyframes txtTranslateY{
-    100%{
+@keyframes txtTranslateY {
+    100% {
         transform: translateY(0);
         opacity: 1;
         visibility: visible;
     }
 }
-.title .birthday{
+.title .birthday {
     color: var(--color-text-pink);
 }
 
-.title .hat{
+.title .hat {
     position: absolute;
     right: 45px;
     top: -350px;
@@ -208,28 +214,31 @@ body {
     z-index: -1;
     animation: topHat 4s 7s forwards ease;
 }
-@keyframes topHat{
-    20%, 30%{
+@keyframes topHat {
+    20%,
+    30% {
         top: -30px;
         transform-origin: left;
         transform: rotate(-40deg);
     }
-    35%, 100%{
+    35%,
+    100% {
         top: -30px;
         transform: rotate(0deg);
     }
 }
-.date__of__birth, .name{
+.date__of__birth,
+.name {
     display: flex;
-    justify-content:space-around;
+    justify-content: space-around;
     align-items: center;
     background-color: var(--color-text-pink);
     border-radius: 50px;
     margin-top: 20px;
     font-family: "Sriracha", cursive;
-    
+
 }
-.date__of__birth{
+.date__of__birth {
     border: 3px solid var(--color-black);
     position: relative;
     transform: translateY(-100px);
@@ -239,22 +248,24 @@ body {
     width: 0px;
     animation: dateOfBirth 5s 9s forwards;
 }
-@keyframes dateOfBirth{
-    20%,40%{
+@keyframes dateOfBirth {
+    20%,
+    40% {
         width: 0px;
         height: 0;
         transform: translateY(0px);
         opacity: 1;
         visibility: visible;
     }
-    45%{
+    45% {
         transform: translateY(0px);
         opacity: 1;
         visibility: visible;
         width: 300px;
         height: 0px;
     }
-    50%,100%{
+    50%,
+    100% {
         transform: translateY(0px);
         opacity: 1;
         visibility: visible;
@@ -262,34 +273,35 @@ body {
         height: 50px;
     }
 }
-.name{
+.name {
     position: absolute;
     padding: 0px 20px;
     bottom: -20px;
     border: 3px solid var(--color-black);
     font-family: 'Dancing Script', cursive;
 }
-.date__of__birth span, .name span{
+.date__of__birth span,
+.name span {
     font-weight: bold;
     margin: 0px 40px;
 }
-.date__of__birth span{
+.date__of__birth span {
     font-size: 1.2rem;
 }
-.name span{
+.name span {
     font-size: 1.7rem;
 }
-.right .box__account{
+.right .box__account {
     position: relative;
     transform: translateY(700px);
     animation: topBoxImage 8s 7s forwards ease-in;
 }
-@keyframes topBoxImage{
-    to{
+@keyframes topBoxImage {
+    to {
         transform: translateY(0);
     }
 }
-.content .right .image{
+.content .right .image {
     position: relative;
     width: 400px;
     height: 400px;
@@ -299,12 +311,12 @@ body {
     align-items: center;
     border: 6px solid var(--color-black);
 }
-.content .right .image img{
+.content .right .image img {
     width: 100%;
     object-fit: cover;
 
 }
-.cricle{
+.cricle {
     position: absolute;
     top: 20px;
     right: 50px;
@@ -315,21 +327,22 @@ body {
     animation: scaleCricle 3s 15s forwards ease-in-out;
 }
 @keyframes scaleCricle {
-    0%{
+    0% {
         transform: scale(0);
     }
-    10%{
+    10% {
         transform: scale(1.3);
     }
-    20%{
+    20% {
         transform: scale(0.7);
     }
-    30%,100%{
+    30%,
+    100% {
         transform: scale(1);
     }
 
 }
-.text__cricle{
+.text__cricle {
     width: 100px;
     height: 100px;
     background-color: var(--color-text-pink);
@@ -340,12 +353,12 @@ body {
     align-items: center;
     animation: rotateCricle 5s linear infinite;
 }
-@keyframes rotateCricle{
-    to{
+@keyframes rotateCricle {
+    to {
         transform: rotate(360deg);
     }
 }
-.text__cricle span{
+.text__cricle span {
     top: 0%;
     left: 50%;
     position: absolute;
@@ -356,21 +369,22 @@ body {
     text-transform: uppercase;
     font-size: 0.7rem;
 }
-.fa-heart{
+.fa-heart {
     color: var(--color-heart);
     filter: drop-shadow(0 0 3px var(--color-heart));
     animation: scaleHeart 1s infinite linear;
 }
-.cricle .fa-heart{
+.cricle .fa-heart {
     position: absolute;
     transform: scale(0.85);
 }
-@keyframes scaleHeart{
-    50%{
+@keyframes scaleHeart {
+    50% {
         transform: scale(1.2);
     }
 }
-.balloon_one img, .balloon_two img {
+.balloon_one img,
+.balloon_two img {
     filter: var(--balloon-filter);
     transition: filter 0.4s ease;
 }
@@ -378,27 +392,29 @@ body {
     filter: var(--flag-filter);
     transition: filter 0.4s ease;
 }
-.right .balloon_one{
+.right .balloon_one {
     position: absolute;
     top: -70px;
     left: -70px;
     animation: balloon1 2s infinite linear;
 }
-@keyframes balloon1{
-    0%, 50%,100%{
+@keyframes balloon1 {
+    0%,
+    50%,
+    100% {
         transform-origin: bottom right;
         transform: rotate(0deg);
     }
-    25%{
+    25% {
         transform-origin: bottom right;
         transform: rotate(3deg);
     }
-    75%{
+    75% {
         transform-origin: bottom right;
         transform: rotate(-3deg);
     }
 }
-.right .balloon_two{
+.right .balloon_two {
     position: absolute;
     top: 170px;
     right: -65px;
@@ -407,93 +423,95 @@ body {
     animation: balloon2 2s infinite linear;
 }
 @keyframes balloon2 {
-    0%,50%,100%{
+    0%,
+    50%,
+    100% {
         transform-origin: bottom left;
         transform: rotate(10deg);
     }
-    25%{
+    25% {
         transform-origin: bottom left;
         transform: rotate(7deg);
     }
-    75%{
+    75% {
         transform-origin: bottom left;
         transform: rotate(13deg);
     }
 }
 
-.decorate_star{
+.decorate_star {
     position: absolute;
     transform: scale(0);
     background-color: var(--color-black);
     clip-path: polygon(0 50%, 35% 35%, 50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%);
-    animation: scaleCricle 3s var(--t) forwards, 
-            scaleStar 2s 16s infinite ease-in-out;
+    animation: scaleCricle 3s var(--t) forwards,
+        scaleStar 2s 16s infinite ease-in-out;
 }
-.decorate_star.star1{
+.decorate_star.star1 {
     width: 20px;
     height: 20px;
     top: 75px;
     left: 300px;
 }
-.decorate_star.star2{
+.decorate_star.star2 {
     width: 15px;
     height: 20px;
     top: 35px;
     right: 360px;
 }
-.decorate_star.star3{
+.decorate_star.star3 {
     width: 14px;
     height: 14px;
     top: 290px;
     left: 630px;
 }
-.decorate_star.star4{
+.decorate_star.star4 {
     width: 18px;
     height: 18px;
     bottom: 60px;
     left: 35px;
 }
-.decorate_star.star5{
+.decorate_star.star5 {
     width: 16px;
     height: 18px;
     bottom: 140px;
     left: 500px;
 }
 @keyframes scaleStar {
-    25%{
+    25% {
         transform: scale(0.8);
     }
-    50%{
+    50% {
         transform: scale(1.1);
     }
 }
-.decorate_bottom{
+.decorate_bottom {
     position: absolute;
     right: 0;
     bottom: -10px;
 }
-.decorate_flower--one{
+.decorate_flower--one {
     position: absolute;
     top: 250px;
     left: 50px;
     transform: scale(0);
     animation: scaleCricle 3s var(--t) forwards ease-in-out;
 }
-.decorate_flower--two{
+.decorate_flower--two {
     position: absolute;
     top: 225px;
     left: 540px;
     transform: scale(0);
     animation: scaleCricle 3s var(--t) forwards ease-in-out;
 }
-.decorate_flower--three{
+.decorate_flower--three {
     position: absolute;
     top: 150px;
     right: 235px;
     transform: scale(0);
     animation: scaleCricle 3s var(--t) forwards ease-in-out;
 }
-.smiley__icon{
+.smiley__icon {
     position: absolute;
     bottom: 180px;
     left: 600px;
@@ -502,17 +520,17 @@ body {
 }
 
 
-.box__letter{
+.box__letter {
     position: fixed;
     top: 0;
     left: 0;
-    background-color: rgba(0,0,0,.5);
+    background-color: rgba(0, 0, 0, .5);
     width: 100%;
     height: 100%;
     z-index: 10;
     display: none;
 }
-.box__letter .letter__border{
+.box__letter .letter__border {
     position: absolute;
     width: 55vw;
     height: 450px;
@@ -522,10 +540,10 @@ body {
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     top: 50%;
     left: 50%;
-    transform: translate(-50%,-50%);
+    transform: translate(-50%, -50%);
     display: none;
 }
-.letter__border .close{
+.letter__border .close {
     position: absolute;
     right: -10px;
     top: -10px;
@@ -539,24 +557,24 @@ body {
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     cursor: pointer;
 }
-.letter__border .letter{
+.letter__border .letter {
     width: 100%;
     height: 100%;
     background-color: var(--color-bg-letter);
     border-radius: 10px;
     padding-top: 15px;
 }
-.letter__border .letter .title__letter{
+.letter__border .letter .title__letter {
     text-align: center;
     font-family: 'Dancing Script', cursive;
     font-weight: bold;
     font-size: 2.4rem;
 }
-.title__letter .fa-solid{
+.title__letter .fa-solid {
     margin-left: 5px;
     font-size: 1.3rem;
 }
-.letter__border .letter .content__letter{
+.letter__border .letter .content__letter {
     position: relative;
     width: 100%;
     height: 100%;
@@ -564,93 +582,94 @@ body {
     padding-top: 1.5rem;
     padding-bottom: 70px;
 }
-.letter__border .letter .content__letter .left{
+.letter__border .letter .content__letter .left {
     position: relative;
     width: 50%;
     height: 100%;
     padding: 1.7rem;
     border-right: 3px solid var(--color-border);
 }
-.content__letter .left #heart__letter{
+.content__letter .left #heart__letter {
     opacity: 0;
     width: 100%;
 }
-#heart__letter.animationOp{
+#heart__letter.animationOp {
     animation: opacityHeart 1s 1s forwards;
 }
-@keyframes opacityHeart{
-    to{
+@keyframes opacityHeart {
+    to {
         opacity: 1;
     }
 }
-.content__letter .left .heart{
+.content__letter .left .heart {
     position: absolute;
     opacity: 0;
 }
-.content__letter .left .heart.animation{
+.content__letter .left .heart.animation {
     animation: scaleHeartLetter 1s var(--t) infinite ease-in-out;
 }
-@keyframes scaleHeartLetter{
-    0%{
+@keyframes scaleHeartLetter {
+    0% {
         opacity: 1;
         transform: scale(0);
     }
-    10%{
+    10% {
         opacity: 1;
         transform: scale(1.3);
     }
-    20%{
+    20% {
         opacity: 1;
         transform: scale(0.7);
     }
-    30%,100%{
+    30%,
+    100% {
         opacity: 1;
         transform: scale(1);
     }
-    
+
 }
-.content__letter .left .heart_1{
+.content__letter .left .heart_1 {
     top: 90px;
     left: 30px;
 }
-.content__letter .left .heart_2{
+.content__letter .left .heart_2 {
     top: 20px;
     right: 70px;
 }
-.content__letter .left .heart_3{
+.content__letter .left .heart_3 {
     bottom: 50px;
     left: 145px;
 }
-.content__letter .left .heart_4{
+.content__letter .left .heart_4 {
     top: 140px;
     right: 35px;
 }
-.content__letter .right{
+.content__letter .right {
     position: relative;
     width: 50%;
 }
-.content__letter .right .love__img{
+.content__letter .right .love__img {
     opacity: 0;
     position: absolute;
     right: 20px;
     top: -100px;
 }
-.love__img.animationOp{
+.love__img.animationOp {
     animation: opacityHeart 1s 1s forwards;
 }
-.content__letter .right .text__letter{
+.content__letter .right .text__letter {
     margin-top: 60px;
     padding: 20px 15px 10px 15px;
     font-family: 'Dancing Script', cursive;
     font-size: 1.3rem;
 }
-.content__letter .right #mewmew{
+.content__letter .right #mewmew {
     position: absolute;
     bottom: 0;
     right: 0;
     opacity: 0;
 }
-#mewmew.animationOp{
+#mewmew.animationOp {
     animation: opacityHeart 1s 1s forwards;
 }
 
@@ -676,15 +695,95 @@ body {
 }
 
 
+/* ============================================
+   ADMIN PANEL FLOATING BUTTON (TOP-LEFT)
+   ============================================ */
+.admin-float-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--color-text-pink);
+    color: #fff;
+    font-family: "Sriracha", cursive;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 30px;
+    border: 2px solid var(--color-black);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    letter-spacing: 0.5px;
+}
+.admin-float-btn i {
+    font-size: 1.1rem;
+    transition: transform 0.6s ease;
+}
+.admin-float-btn:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+    background: var(--color-heart);
+    border-color: var(--color-heart);
+    color: #fff;
+}
+.admin-float-btn:hover i {
+    transform: rotate(120deg);
+}
+.admin-float-btn:active {
+    transform: scale(0.92);
+}
 
-@media screen and (max-width: 658px)   {
+
+/* ============================================
+   FOOTER - FULL WIDTH
+   ============================================ */
+.app-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px 15px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    font-family: "Sriracha", cursive;
+    font-size: 3.5rem;
+    color: var(--color-black);
+    z-index: 100;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+.app-footer span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.app-footer .footer-divider {
+    color: rgba(0, 0, 0, 0.2);
+    font-weight: 300;
+}
+
+
+/* ============================================
+   RESPONSIVE (Mobile)
+   ============================================ */
+@media screen and (max-width: 658px) {
 
     .flag__birthday .flag__left {
-        transform: rotate(-10deg) translate(-119px,3px);
+        transform: rotate(-10deg) translate(-119px, 3px);
     }
 
     .flag__birthday .flag__right {
-        transform: rotate(10deg) translate(-106px,39px) scaleX(-1);
+        transform: rotate(10deg) translate(-106px, 39px) scaleX(-1);
     }
 
     .content {
@@ -760,7 +859,7 @@ body {
         box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
         top: 50%;
         left: 50%;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%, -50%);
         display: none;
     }
 
@@ -803,8 +902,8 @@ body {
     }
 
     .love__img img {
- 
-            width: 84px;
+
+        width: 84px;
 
     }
 
@@ -837,20 +936,50 @@ body {
         animation: balloon1 2s infinite linear;
     }
 
-    .right .balloon_one img{
+    .right .balloon_one img {
         width: 76px !important;
     }
 
+    /* Admin button responsive - Top Left */
+    .admin-float-btn {
+        top: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        gap: 5px;
+        border-width: 2px;
+        border-radius: 20px;
+    }
+    .admin-float-btn i {
+        font-size: 0.9rem;
+    }
+    .admin-float-btn span {
+        font-size: 0.65rem;
+    }
 
+    /* Footer responsive - Full Width */
+    .app-footer {
+        font-size: 0.7rem;
+        padding: 8px 12px;
+        gap: 4px 8px;
+        flex-wrap: wrap;
+        border-top-width: 1px;
+    }
+    .app-footer .footer-divider {
+        display: none;
+    }
+    .app-footer span:first-child::after {
+        content: "•";
+        margin-left: 8px;
+        color: rgba(0, 0, 0, 0.2);
+    }
 }
 
 
-
-
-
-
-
-.boxMail{
+/* ============================================
+   BOX MAIL (LETTER MODAL)
+   ============================================ */
+.boxMail {
     position: fixed;
     background: rgb(0, 0, 0, 0.8);
     width: 100%;
@@ -865,12 +994,12 @@ body {
     transition: all 0.5s;
     z-index: 100000000;
 }
-.boxMail.active{
+.boxMail.active {
     opacity: 1;
     visibility: visible;
     transform: scale(1);
 }
-.boxMail .boxMail-container{
+.boxMail .boxMail-container {
     position: absolute;
     width: 750px;
     height: 500px;
@@ -881,15 +1010,15 @@ body {
     perspective: 2000px;
     transition: all 0.5s;
 }
-.boxMail .boxMail-container:hover{
+.boxMail .boxMail-container:hover {
     transform: rotate(-5deg);
     filter: drop-shadow(0 0 10px var(--color-text-pink));
 }
-.boxMail .boxMail-container:hover .card1{
+.boxMail .boxMail-container:hover .card1 {
     transform: translate(-187px, -250px) rotateY(-140deg);
 }
 .boxMail .boxMail-container .card1,
-.boxMail .boxMail-container .card2{
+.boxMail .boxMail-container .card2 {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -909,7 +1038,7 @@ body {
     align-items: center;
     flex-direction: column;
 }
-.boxMail-container .card1{
+.boxMail-container .card1 {
     z-index: 1;
     -webkit-transform-style: preserve-3d;
     transform-style: preserve-3d;
@@ -925,9 +1054,9 @@ body {
 .boxMail .boxMail-container .card1 .mewmew-cat img {
     width: 65px;
     height: auto;
-    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.25));
+    filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.25));
 }
-.boxMail .boxMail-container .card1 .userImg{
+.boxMail .boxMail-container .card1 .userImg {
     position: relative;
     width: 80px;
     height: 80px;
@@ -938,13 +1067,13 @@ body {
     cursor: pointer;
     margin-bottom: 20px;
 }
-.boxMail .boxMail-container .card1 .userImg img{
+.boxMail .boxMail-container .card1 .userImg img {
     position: absolute;
     object-fit: cover;
     width: calc(100%);
     height: calc(100%);
 }
-.boxMail .boxMail-container .card1 h3{
+.boxMail .boxMail-container .card1 h3 {
     font-family: 'Dancing Script', cursive;
     font-size: 40px;
     text-transform: uppercase;
@@ -954,9 +1083,9 @@ body {
     letter-spacing: 5px;
     transform: rotate(-5deg);
     text-shadow: 0 0 5px white,
-                0 0 10px white;
+        0 0 10px white;
 }
-.boxMail .boxMail-container .card2{
+.boxMail .boxMail-container .card2 {
     position: relative;
     width: 50%;
     height: 100%;
@@ -976,11 +1105,11 @@ body {
     font-family: "Inter", serif;
     color: #fff;
 }
-.boxMail .boxMail-container:hover .card2-content{
+.boxMail .boxMail-container:hover .card2-content {
     transform: translate(20px, 20px);
     box-shadow: -1px -1px 5px rgb(0, 0, 0, 0.4);
 }
-.boxMail .boxMail-container .card2 h3{
+.boxMail .boxMail-container .card2 h3 {
     font-family: 'Dancing Script', cursive;
     padding: 20px 0px 10px 60px;
     opacity: 0;
@@ -988,90 +1117,90 @@ body {
     font-size: 25px;
     text-shadow: 0 0 8px var(--color-text-pink);
 }
-.boxMail .boxMail-container .card2:hover h3{
+.boxMail .boxMail-container .card2:hover h3 {
     animation: texth3 3s forwards;
     animation-delay: 2s;
     transition: 1s;
 }
-@keyframes texth3{
-    0%{
+@keyframes texth3 {
+    0% {
         opacity: 1;
         visibility: visible;
         padding: 20px 0px 10px 60px;
     }
-    100%{
+    100% {
         opacity: 1;
         visibility: visible;
-        padding: 20px 0px 10px 152px; 
+        padding: 20px 0px 10px 152px;
     }
 }
-.boxMail .boxMail-container .card2 h2{
+.boxMail .boxMail-container .card2 h2 {
     font-family: 'Dancing Script', cursive;
     padding: 0px 20px;
     text-indent: 20px;
     font-size: 22px;
     opacity: 0;
 }
-.boxMail .boxMail-container .card2:hover h2{
+.boxMail .boxMail-container .card2:hover h2 {
     animation: texth2 2s forwards;
     animation-delay: 4s;
     transition: 1s;
 }
-@keyframes texth2{
-    0%{
+@keyframes texth2 {
+    0% {
         opacity: 0;
     }
-    100%{
+    100% {
         opacity: 1;
     }
 }
-.boxMail .boxMail-container .card2 .card2-content .imageCute2{
+.boxMail .boxMail-container .card2 .card2-content .imageCute2 {
     position: absolute;
     top: 5px;
     left: 20px;
     opacity: 0;
     transition: 1s;
 }
-.boxMail .boxMail-container .card2 .card2-content:hover .imageCute2{
+.boxMail .boxMail-container .card2 .card2-content:hover .imageCute2 {
     animation: cute3 1s linear infinite,
-                cute4 3s 2s forwards;
+        cute4 3s 2s forwards;
     animation-delay: 2s;
     transition: 1s;
 }
-@keyframes cute3{
-    0%{
+@keyframes cute3 {
+    0% {
         opacity: 1;
         transform: rotate(0deg);
     }
-    25%{
+    25% {
         opacity: 1;
         transform: rotate(5deg);
     }
-    50%{
+    50% {
         opacity: 1;
         transform: rotate(0deg);
     }
-    75%{
+    75% {
         opacity: 1;
         transform: rotate(-5deg);
     }
-    100%{
+    100% {
         opacity: 1;
         transform: rotate(0deg);
     }
 }
-@keyframes cute4{
-    0%{
+@keyframes cute4 {
+    0% {
         left: 20px;
     }
-    100%{
+    100% {
         left: 100px;
     }
 }
-.boxMail .boxMail-container .card2 .card2-content .imageCute2 img{
+.boxMail .boxMail-container .card2 .card2-content .imageCute2 img {
     width: 40px;
 }
-.boxMail .fa-xmark{
+.boxMail .fa-xmark {
     position: fixed;
     top: 0;
     right: 0;
